@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>{% block title %} Calavera{% endblock %}</title>
+    <link rel="icon" type="image/jpeg" href="{{ url_for('static', filename='img/logos/calavera.jpg') }}">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Momo+Trust+Sans:wght@200..800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=TikTok+Sans:opsz,wght@12..36,300..900&display=swap" rel="stylesheet">
+    <!-- Library Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/lightbox.css') }}">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/compressorjs/1.2.1/compressor.min.js"></script>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-content">
+            <span class="loader"></span>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <h1 class="logo"><span>Calavera</span></h1>
+            
+            <div class="header-controls">
+                <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
+                    <i class="fas fa-moon"></i>
+                </button>
+                
+                <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation Sidebar -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-content">
+            <ul class="nav-links">
+                <li>
+                    <a href="{{ url_for('index') }}" class="nav-link {% if request.endpoint == 'index' %}active{% endif %}">
+                        <i class="fas fa-home"></i>
+                        <span>Beranda</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('struktur') }}" class="nav-link {% if request.endpoint == 'struktur' %}active{% endif %}">
+                        <i class="fas fa-sitemap"></i>
+                        <span>Struktur Kelas</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('jadwal') }}" class="nav-link {% if request.endpoint == 'jadwal' %}active{% endif %}">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>Jadwal</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('galeri') }}" class="nav-link {% if request.endpoint == 'galeri' %}active{% endif %}">
+                        <i class="bx bxs-image"></i> 
+                        <span>Galeri</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('siswa') }}" class="nav-link {% if request.endpoint == 'siswa' %}active{% endif %}">
+                        <i class="fas fa-user-graduate"></i>
+                        <span>Daftar Siswa</span>
+                    </a>
+                </li>
+                <li>
+<a href="{{ url_for('chatbot.calavera_ai') }}" class="nav-link {% if request.endpoint == 'chatbot.calavera_ai' %}active{% endif %}">
+    <i class="fas fa-robot"></i>
+    <span>Calavera AI</span>
+    <span class="badge-new">New</span>
+</a>
+</li>
+                
+                {% if session.admin_logged_in %}
+                <li>
+                    <a href="{{ url_for('admin_dashboard') }}" class="nav-link {% if request.endpoint == 'admin_dashboard' %}active{% endif %}">
+                        <i class="fas fa-cog"></i>
+                        <span>Admin</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('logout') }}" class="nav-link">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Logout</span>
+                    </a>
+                </li>
+                {% else %}
+                <li>
+                    <a href="{{ url_for('login') }}" class="nav-link {% if request.endpoint == 'login' %}active{% endif %}">
+                        <i class="fas fa-sign-in-alt"></i>
+                        <span>Login</span>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Overlay for mobile sidebar -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="flash-message {{ category }}">
+                            <span>{{ message }}</span>
+                            <button class="flash-close" onclick="this.parentElement.remove()">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <!-- Quick Links -->
+            <div class="footer-section">
+                <h3><i class="fas fa-link"></i> Tautan Cepat</h3>
+                <ul class="footer-links">
+                    <li><a href="{{ url_for('index') }}"><i class="fas fa-home"></i>Beranda</a></li>
+                    <li><a href="{{ url_for('struktur') }}"><i class="fas fa-sitemap"></i>Struktur Kelas</a></li>
+                    <li><a href="{{ url_for('jadwal') }}"><i class="fas fa-calendar-alt"></i>Jadwal</a></li>
+                    <li><a href="{{ url_for('galeri') }}"><i class="bx bxs-image"></i>Galeri</a></li>
+                    <li><a href="{{ url_for('siswa') }}"><i class="fas fa-user-graduate"></i>Daftar Siswa</a></li>
+                    <li><a href="{{ url_for('chatbot.calavera_ai') }}"><i class="fas fa-robot"></i>Calavera AI</a></li>
+                </ul>
+            </div>
+
+            <!-- Social Media -->
+            <div class="footer-section">
+                <h3><i class="fas fa-share-alt"></i> Media Sosial</h3>
+                <div class="social-links">
+                    <a href="https://www.instagram.com/astaga.calavera?igsh=Njd3b2o0MHBka2s3" target="_blank" rel="noopener" class="social-link instagram" title="Instagram">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                    <a href="https://www.tiktok.com/@astaga.calavera3?_t=ZS-90Lv7r0c3RB&_r=1" target="_blank" rel="noopener" class="social-link tiktok" title="TikTok">
+                        <i class="fab fa-tiktok"></i>
+                    </a>
+                    <a href="https://youtube.com" target="_blank" rel="noopener" class="social-link" title="YouTube">
+                        <i class="fab fa-youtube"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Contact Info -->
+            <div class="footer-section">
+                <h3><i class="fas fa-address-book"></i> Kontak</h3>
+                <ul class="contact-info">
+                    <li>
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>Jl. TGH. Umar No. 17 Selong</span>
+                    </li>
+                    <li>
+                        <i class="fas fa-phone"></i>
+                        <a href="tel:+6281234567890">+62 812-3456-7890</a>
+                    </li>
+                </ul>
+            </div>
+            
+            <!-- Map Section -->
+            <div class="footer-section footer-map">
+                <h3><i class="fas fa-map-marked-alt"></i> Lokasi</h3>
+                <div class="map-container">
+                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3944.3906449803176!2d116.5442041!3d-8.6543461!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2dcc4ec222b10bb1%3A0x449cb5847ac9cdc2!2sSMA%20Negeri%201%20Selong!5e0!3m2!1sid!2sid!4v1759730790001!5m2!1sid!2sid" width="100%" height="250" style="border:0; border-radius: var(--radius);" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Bottom -->
+        <div class="footer-bottom">
+            <p>&copy; 2025 Calavera. All Rights Reserved.</p>
+            <p style="font-size: 0.75rem;">Designed & Developed by ZK.</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <button id="scrollToTop" class="scroll-to-top" aria-label="Kembali ke atas">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+</body>
+</html>

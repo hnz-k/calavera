@@ -1,0 +1,2161 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - Calavera{% endblock %}
+
+{% block content %}
+<style>
+.admin-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.dashboard-header {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+  border-radius: var(--radius);
+  padding: 2.5rem 2rem;
+  margin-bottom: 2rem;
+  color: white;
+  box-shadow: var(--shadow);
+  position: relative;
+  overflow: hidden;
+}
+
+.dashboard-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url("{{ url_for('static', filename='img/hero-pattern/skulls.svg') }}");
+    background-repeat: repeat;
+    background-size: 50px 50px;
+    opacity: 0.15;
+    pointer-events: none;
+    z-index: 1;
+}
+.dashboard-header-content {
+  position: relative;
+  z-index: 1;
+}
+
+.dashboard-header h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.dashboard-header h1 i {
+  font-size: 1.75rem;
+}
+
+.dashboard-header p {
+  font-size: 1rem;
+  opacity: 0.95;
+  font-weight: 400;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+
+.stat-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 1.75rem;
+  box-shadow: var(--shadow);
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  transition: all var(--transition);
+  border: 1px solid transparent;
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 12px 40px rgba(15,23,42,0.12);
+  border-color: var(--primary);
+}
+
+[data-theme="dark"] .stat-card:hover {
+  box-shadow: 0 12px 40px rgba(2,6,23,0.9);
+}
+
+.stat-icon {
+  width: 64px;
+  height: 64px;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.stat-icon i {
+  font-size: 1.75rem;
+  color: white;
+}
+
+.stat-content h3 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 0.25rem;
+  line-height: 1;
+}
+
+.stat-content p {
+  font-size: 0.9rem;
+  color: var(--muted);
+  font-weight: 500;
+  margin: 0;
+}
+
+.modern-tabs {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 0.5rem;
+  margin-bottom: 2rem;
+  box-shadow: none !important;
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--muted) transparent;
+  position: sticky;
+  top: calc(var(--header-height)); /* 1rem margin dari header */
+  z-index: 100;
+  transition: all var(--transition);
+  border-bottom: 2px solid var(--border);
+}
+
+.modern-tabs.sticky {
+  backdrop-filter: blur(10px);
+  background: var(--surface-blur);
+  box-shadow: 0 8px 32px rgba(15,23,42,0.1);
+}
+
+[data-theme="dark"] .modern-tabs.sticky {
+  box-shadow: 0 8px 32px rgba(2,6,23,0.8);
+}
+
+.modern-tabs::-webkit-scrollbar {
+  height: 6px;
+}
+
+.modern-tabs::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.modern-tabs::-webkit-scrollbar-thumb {
+  background: var(--muted);
+  border-radius: 3px;
+}
+
+.modern-tab {
+  flex: 1;
+  min-width: 150px;
+  padding: 0.875rem 1.25rem;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius);
+  color: var(--text);
+  font-weight: 500;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  position: relative;
+  white-space: nowrap;
+}
+
+.modern-tab i {
+  font-size: 1rem;
+}
+
+.modern-tab:hover:not(.active) {
+  background: var(--bg);
+  color: var(--primary);
+}
+
+.modern-tab.active {
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  color: white;
+  box-shadow: 0 4px 12px rgba(30, 58, 138, 0.2);
+}
+
+[data-theme="dark"] .modern-tab.active {
+  box-shadow: 0 4px 12px rgba(91, 124, 224, 0.3);
+}
+
+.admin-section {
+  display: none;
+  animation: fadeIn 0.4s ease;
+}
+
+.admin-section.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modern-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: var(--shadow);
+  border: 1px solid transparent;
+  transition: all var(--transition);
+}
+
+.modern-card:hover {
+  border-color: var(--primary);
+  box-shadow: 0 12px 40px rgba(15,23,42,0.1);
+}
+
+[data-theme="dark"] .modern-card:hover {
+  box-shadow: 0 12px 40px rgba(2,6,23,0.9);
+}
+
+.modern-card h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.modern-card h2 i {
+  color: var(--primary);
+}
+
+.modern-form .form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.modern-form .form-group {
+  margin-bottom: 0;
+}
+
+.modern-form .form-label {
+  display: block;
+  margin-bottom: 0.625rem;
+  font-weight: 600;
+  color: var(--text);
+  font-size: 0.9rem;
+}
+
+.modern-form .form-control {
+  width: 100%;
+  padding: 0.875rem 1.125rem;
+  border: 2px solid var(--bg);
+  border-radius: calc(var(--radius) - 2px);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 0.95rem;
+  transition: all var(--transition);
+  font-family: inherit;
+}
+
+.modern-form .form-control:focus {
+  outline: none;
+  border-color: var(--primary);
+  background: var(--surface);
+  box-shadow: 0 0 0 4px rgba(30, 58, 138, 0.08);
+}
+
+[data-theme="dark"] .modern-form .form-control:focus {
+  box-shadow: 0 0 0 4px rgba(91, 124, 224, 0.15);
+}
+
+.modern-form .form-text {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.image-preview {
+  width: 160px;
+  height: 160px;
+  border-radius: var(--radius);
+  object-fit: cover;
+  margin-top: 1rem;
+  border: 3px dashed var(--muted);
+  display: none;
+  transition: all var(--transition);
+}
+
+.image-preview.active {
+  display: block;
+  border-style: solid;
+  border-color: var(--primary);
+}
+
+.modern-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  padding: 0.875rem 1.75rem;
+  border: none;
+  border-radius: calc(var(--radius) - 2px);
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all var(--transition);
+  text-decoration: none;
+  min-height: 44px;
+}
+
+.modern-btn-primary {
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  color: white;
+  box-shadow: 0 4px 12px rgba(30, 58, 138, 0.2);
+  margin-top: 1rem;
+}
+
+.modern-btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(30, 58, 138, 0.3);
+}
+
+.modern-table-container {
+  overflow-x: auto;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  background: var(--surface);
+}
+
+.modern-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.modern-table thead {
+  background: var(--bg);
+}
+
+.modern-table th {
+  padding: 1.125rem 1.25rem;
+  text-align: left;
+  font-weight: 600;
+  color: var(--text);
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid var(--bg);
+}
+
+.modern-table td {
+  padding: 1.125rem 1.25rem;
+  color: var(--text);
+  border-bottom: 1px solid var(--bg);
+}
+
+.modern-table tbody tr {
+  transition: all var(--transition);
+}
+
+.modern-table tbody tr:hover {
+  background: var(--bg);
+}
+
+.modern-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.profile-img {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--bg);
+}
+
+.profile-placeholder {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.25rem;
+}
+
+.modern-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.gallery-card {
+  position: relative;
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  aspect-ratio: 1;
+  transition: all var(--transition);
+  cursor: pointer;
+}
+
+.gallery-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 16px 48px rgba(15,23,42,0.15);
+}
+
+[data-theme="dark"] .gallery-card:hover {
+  box-shadow: 0 16px 48px rgba(2,6,23,0.95);
+}
+
+.gallery-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--transition);
+}
+
+.gallery-card:hover img {
+  transform: scale(1.08);
+}
+
+.gallery-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+  color: white;
+  padding: 1.5rem 1.25rem;
+  transform: translateY(100%);
+  transition: transform var(--transition);
+}
+
+.gallery-card:hover .gallery-overlay {
+  transform: translateY(0);
+}
+
+.gallery-overlay h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.375rem;
+}
+
+.gallery-overlay small {
+  font-size: 0.8rem;
+  opacity: 0.9;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+}
+
+.empty-state-icon {
+  width: 80px;
+  height: 80px;
+  background: var(--bg);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem;
+}
+
+.empty-state-icon i {
+  font-size: 2.5rem;
+  color: var(--muted);
+}
+
+.empty-state h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 0.75rem;
+}
+
+.empty-state p {
+  color: var(--muted);
+  font-size: 1rem;
+}
+
+@media (max-width: 768px) {
+  .dashboard-header {
+    padding: 2rem 1.5rem;
+  }
+  
+  .dashboard-header h1 {
+    font-size: 1.5rem;
+  }
+  
+  .dashboard-header p {
+    font-size: 0.9rem;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .stat-card {
+    padding: 1.25rem;
+  }
+  
+  .stat-icon {
+    width: 56px;
+    height: 56px;
+  }
+  
+  .stat-icon i {
+    font-size: 1.5rem;
+  }
+  
+  .stat-content h3 {
+    font-size: 1.75rem;
+  }
+  
+  .modern-tabs {
+    top: calc(var(--header-height) + 0.5rem); /* Kurangi margin di mobile */
+    padding: 0.375rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .modern-tab {
+    min-width: 130px;
+    padding: 0.75rem 1rem;
+    font-size: 0.85rem;
+  }
+  
+  .modern-tab i {
+    font-size: 0.9rem;
+  }
+  
+  .modern-card {
+    padding: 1.5rem;
+  }
+  
+  .modern-card h2 {
+    font-size: 1.25rem;
+  }
+  
+  .modern-form .form-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .modern-table-container {
+    overflow-x: scroll;
+  }
+  
+  .modern-table th,
+  .modern-table td {
+    padding: 0.875rem;
+    font-size: 0.875rem;
+  }
+  
+  .modern-gallery {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+  }
+}
+
+@media (min-width: 1200px) {
+  .admin-container {
+    padding: 0 2rem;
+  }
+  
+  .stats-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media print {
+  .modern-tabs,
+  .modern-btn,
+  .gallery-delete-btn {
+    display: none;
+  }
+  
+  .admin-section {
+    display: block !important;
+  }
+  
+  .modern-card {
+    box-shadow: none;
+    border: 1px solid #ddd;
+  }
+}
+
+/* ===== LEVEL LEGEND ===== */
+.level-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 1.25rem;
+  background: var(--bg);
+  border-radius: calc(var(--radius) - 2px);
+  margin-bottom: 1.5rem;
+  border-left: 4px solid var(--primary);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.legend-badge {
+  display: inline-block;
+  padding: 0.35rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.legend-badge.level-0 {
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+}
+
+.legend-badge.level-1 {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+}
+
+.legend-badge.level-2 {
+  background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.legend-badge.level-3 {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.legend-text {
+  font-size: 0.9rem;
+  color: var(--text);
+  font-weight: 500;
+}
+
+/* ===== LEVEL BADGE IN TABLE ===== */
+.level-badge {
+  display: inline-block;
+  padding: 0.4rem 0.65rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.level-badge.level-0 {
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+}
+
+.level-badge.level-1 {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+}
+
+.level-badge.level-2 {
+  background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.level-badge.level-3 {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.level-badge.level-other {
+  background: linear-gradient(135deg, #6b7280, #4b5563);
+}
+
+/* ===== CUSTOM ROLE INPUT ===== */
+#role-custom {
+  transition: all var(--transition);
+}
+
+/* ===== RESPONSIVE LEGEND ===== */
+@media (max-width: 768px) {
+  .level-legend {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .legend-item {
+    justify-content: flex-start;
+  }
+}
+
+/* ===== ACTION BUTTONS STYLES ===== */
+.action-buttons {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  border: none;
+  border-radius: calc(var(--radius) - 4px);
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all var(--transition);
+  text-decoration: none;
+  min-height: 40px;
+  flex: 1;
+  min-width: 80px;
+  max-width: 100px;
+}
+
+.action-btn-edit {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: white;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2);
+}
+
+.action-btn-edit:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+  background: linear-gradient(135deg, #d97706, #b45309);
+}
+
+.action-btn-danger {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);
+}
+
+.action-btn-danger:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+}
+
+/* Perlebar kolom aksi */
+.modern-table th:last-child,
+.modern-table td:last-child {
+  min-width: 180px;
+  max-width: 200px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .action-buttons {
+    gap: 0.375rem;
+  }
+  
+  .action-btn {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8rem;
+    min-height: 36px;
+    min-width: 70px;
+    max-width: 85px;
+  }
+  
+  .modern-table th:last-child,
+  .modern-table td:last-child {
+    min-width: 150px;
+    max-width: 170px;
+  }
+}
+
+@media (max-width: 480px) {
+  .action-buttons {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  
+  .action-btn {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    min-height: 32px;
+    min-width: 60px;
+    max-width: 70px;
+  }
+  
+  .action-btn span {
+    display: none;
+  }
+  
+  .action-btn i {
+    margin-right: 0;
+  }
+  
+  .modern-table th:last-child,
+  .modern-table td:last-child {
+    min-width: 80px;
+    max-width: 90px;
+  }
+  
+   .modern-tabs {
+    top: var(--header-height); /* Tempel langsung di header */
+    border-radius: 0;
+    margin-bottom: 1rem;
+    padding: 0.25rem;
+  }
+  
+  .modern-tab {
+    min-width: 110px;
+    padding: 0.625rem 0.75rem;
+    font-size: 0.8rem;
+  }
+  
+  .modern-tab span {
+    display: none; /* Sembunyikan text, tampilkan icon saja di mobile sangat kecil */
+  }
+  
+  .modern-tab i {
+    font-size: 0.85rem;
+    margin: 0;
+  }
+}
+
+@media (max-height: 600px) {
+  .modern-tabs {
+    top: var(--header-height);
+  }
+}
+
+/* ===== GALLERY ACTION BUTTONS ===== */
+.gallery-actions {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    display: flex;
+    gap: 0.5rem;
+    opacity: 0;
+    transition: all var(--transition);
+}
+
+.gallery-card:hover .gallery-actions {
+    opacity: 1;
+}
+
+.gallery-edit-btn, .gallery-delete-btn {
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all var(--transition);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    text-decoration: none;
+}
+
+.gallery-edit-btn {
+    background: rgba(245, 158, 11, 0.95);
+    color: white;
+}
+
+.gallery-edit-btn:hover {
+    background: #d97706;
+    transform: scale(1.1);
+}
+
+.gallery-delete-btn {
+    background: rgba(239, 68, 68, 0.95);
+    color: white;
+}
+
+.gallery-delete-btn:hover {
+    background: #dc2626;
+    transform: scale(1.1);
+}
+
+/* Responsive gallery actions */
+@media (max-width: 768px) {
+    .gallery-actions {
+        top: 0.5rem;
+        right: 0.5rem;
+    }
+    
+    .gallery-edit-btn, .gallery-delete-btn {
+        width: 35px;
+        height: 35px;
+        font-size: 0.9rem;
+    }
+}
+
+</style>
+
+<div class="admin-container">
+  <div class="dashboard-header">
+    <div class="dashboard-header-content">
+      <h1>
+        <i class="fas fa-cog"></i>
+        Dashboard Admin
+      </h1>
+      <p>Selamat datang, <strong>{{ session.admin_username }}</strong>! Kelola konten website kelas dari sini.</p>
+    </div>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon">
+        <i class="fas fa-users"></i>
+      </div>
+      <div class="stat-content">
+        <h3>{{ struktur_data|length if struktur_data else 0 }}</h3>
+        <p>Anggota Kelas</p>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon">
+        <i class="fas fa-calendar"></i>
+      </div>
+      <div class="stat-content">
+        <h3>{{ jadwal_data|length if jadwal_data else 0 }}</h3>
+        <p>Jadwal Pelajaran</p>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon">
+        <i class="fas fa-broom"></i>
+      </div>
+      <div class="stat-content">
+        <h3>{{ piket_data|length if piket_data else 0 }}</h3>
+        <p>Jadwal Piket</p>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon">
+       <i class="bx bxs-image"></i> 
+      </div>
+      <div class="stat-content">
+        <h3>{{ galeri_data|length if galeri_data else 0 }}</h3>
+        <p>Foto Galeri</p>
+      </div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-icon">
+       <i class="fas fa-user-graduate"></i> 
+      </div>
+      <div class="stat-content">
+        <h3>{{ siswa_data|length if siswa_data else 0 }}</h3>
+        <p>Jumlah Siswa</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="modern-tabs">
+    <button class="modern-tab {% if active_tab == 'struktur' %}active{% endif %}" data-tab="struktur-section">
+      <i class="fas fa-sitemap"></i>
+      <span>Struktur Kelas</span>
+    </button>
+    <button class="modern-tab {% if active_tab == 'jadwal' %}active{% endif %}" data-tab="jadwal-section">
+      <i class="fas fa-calendar-alt"></i>
+      <span>Jadwal</span>
+    </button>
+    <button class="modern-tab {% if active_tab == 'piket' %}active{% endif %}" data-tab="piket-section">
+      <i class="fas fa-broom"></i>
+      <span>Jadwal Piket</span>
+    </button>
+    <button class="modern-tab {% if active_tab == 'galeri' %}active{% endif %}" data-tab="galeri-section">
+      <i class="bx bxs-image"></i> 
+      <span>Galeri</span>
+    </button>
+    <button class="modern-tab {% if active_tab == 'siswa' %}active{% endif %}" data-tab="siswa-section">
+      <i class="fas fa-user-graduate"></i>
+      <span>Data Siswa</span>
+    </button>
+  </div>
+
+ <section id="struktur-section" class="admin-section {% if active_tab == 'struktur' %}active{% endif %}">
+    <div class="modern-card">
+      <h2>
+        <i class="fas fa-plus-circle"></i>
+        Tambah Anggota Kelas
+      </h2>
+      <form method="POST" action="{{ url_for('admin_struktur') }}" enctype="multipart/form-data" class="modern-form">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="nama" class="form-label">Nama Lengkap</label>
+            <input type="text" id="nama" name="nama" class="form-control" placeholder="Masukkan nama lengkap" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="role" class="form-label">Jabatan/Role</label>
+            <select id="role" name="role" class="form-control" required>
+              <option value="">-- Pilih Jabatan --</option>
+              <optgroup label="Tingkat 0 - Pembimbing">
+                <option value="Wali Kelas">Wali Kelas</option>
+              </optgroup>
+              <optgroup label="Tingkat 1 - Pimpinan Kelas">
+                <option value="Ketua Kelas">Ketua Kelas</option>
+                <option value="Wakil Ketua Kelas">Wakil Ketua Kelas</option>
+              </optgroup>
+              <optgroup label="Tingkat 2 - Administrasi">
+                <option value="Bendahara 1">Bendahara 1</option>
+                <option value="Bendahara 2">Bendahara 2</option>
+                <option value="Sekretaris 1">Sekretaris 1</option>
+                <option value="Sekretaris 2">Sekretaris 2</option>
+              </optgroup>
+              <optgroup label="Tingkat 3 - Seksi-Seksi">
+                <option value="Seksi Kebersihan">Seksi Kebersihan</option>
+                <option value="Seksi Keamanan">Seksi Keamanan</option>
+              </optgroup>
+              <optgroup label="Lainnya">
+                <option value="Custom">Custom (Tulis Manual)</option>
+              </optgroup>
+            </select>
+            <input type="text" id="role-custom" name="role_custom" class="form-control" 
+                   placeholder="Tulis jabatan custom..." style="display: none; margin-top: 0.5rem;">
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="parent_id" class="form-label">Atasan</label>
+          <select id="parent_id" name="parent_id" class="form-control" required>
+            <option value="">-- Pilih Atasan --</option>
+            {% if struktur_data %}
+              {% for item in struktur_data %}
+                <option value="{{ item['id'] }}">{{ item['nama'] }} ({{ item['role'] }})</option>
+              {% endfor %}
+            {% endif %}
+          </select>
+          <small class="form-text">
+            <strong>Panduan:</strong><br>
+            • <strong>Wali Kelas:</strong> Pilih "Tidak Ada Atasan"<br>
+            • <strong>Ketua/Wakil:</strong> Pilih "Wali Kelas"<br>
+            • <strong>Bendahara/Sekretaris:</strong> Pilih "Ketua Kelas" atau "Wakil Ketua Kelas"<br>
+            • <strong>Seksi-Seksi:</strong> Pilih "Bendahara" atau "Sekretaris"
+          </small>
+        </div>
+        
+        <div class="form-group">
+          <label for="foto" class="form-label">Foto Profil (Opsional)</label>
+          <input type="file" id="foto" name="foto" class="form-control" accept="image/*">
+          <small class="form-text">Format: JPG, PNG, GIF, WEBP. Maksimal 2MB.</small>
+          <img id="foto-preview" class="image-preview" alt="Preview">
+        </div>
+        
+        <button type="submit" class="modern-btn modern-btn-primary">
+          <i class="fas fa-save"></i>
+          Simpan Anggota
+        </button>
+      </form>
+    </div>
+
+    <div class="modern-card">
+      <h2>
+        <i class="fas fa-list"></i>
+        Daftar Anggota Kelas
+      </h2>
+      
+      <!-- Legend untuk Level -->
+      <div class="level-legend">
+        <div class="legend-item">
+          <span class="legend-badge level-0">Tingkat 0</span>
+          <span class="legend-text">Wali Kelas</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-badge level-1">Tingkat 1</span>
+          <span class="legend-text">Ketua & Wakil</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-badge level-2">Tingkat 2</span>
+          <span class="legend-text">Bendahara & Sekretaris</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-badge level-3">Tingkat 3</span>
+          <span class="legend-text">Seksi-Seksi</span>
+        </div>
+      </div>
+      
+      {% if struktur_data %}
+      <div class="modern-table-container">
+        <table class="modern-table">
+          <thead>
+            <tr>
+              <th>Tingkat</th>
+              <th>Foto</th>
+              <th>Nama</th>
+              <th>Jabatan</th>
+              <th>Atasan</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in struktur_data %}
+            <tr>
+              <td>
+                {% if 'Wali' in item['role'] %}
+                <span class="level-badge level-0">0</span>
+                {% elif 'Ketua' in item['role'] or 'Wakil' in item['role'] %}
+                <span class="level-badge level-1">1</span>
+                {% elif 'Bendahara' in item['role'] or 'Sekretaris' in item['role'] or 'Sekertaris' in item['role'] %}
+                <span class="level-badge level-2">2</span>
+                {% elif 'Seksi' in item['role'] %}
+                <span class="level-badge level-3">3</span>
+                {% else %}
+                <span class="level-badge level-other">?</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if item['foto'] %}
+                <img src="{{ url_for('static', filename='img/uploads/' + item['foto']) }}" 
+                     alt="{{ item['nama'] }}" 
+                     class="profile-img">
+                {% else %}
+                <div class="profile-placeholder">
+                  <i class="fas fa-user"></i>
+                </div>
+                {% endif %}
+              </td>
+              <td><strong>{{ item['nama'] }}</strong></td>
+              <td>{{ item['role'] }}</td>
+              <td>
+                {% if item['parent_nama'] %}
+                {{ item['parent_nama'] }}
+                {% else %}
+                <span style="color: var(--muted);">-</span>
+                {% endif %}
+              </td>
+              <td>
+    <div class="action-buttons">
+        <a href="{{ url_for('edit_data', type='struktur', id=item['id']) }}" 
+           class="action-btn action-btn-edit" 
+           title="Edit">
+            <i class="fas fa-edit"></i>
+            <span>Edit</span>
+        </a>
+        <a href="{{ url_for('delete_struktur', id=item['id']) }}" 
+           class="action-btn action-btn-danger"
+           onclick="return confirm('Yakin ingin menghapus {{ item['nama'] }}?')"
+           title="Hapus">
+            <i class="fas fa-trash"></i>
+            <span>Hapus</span>
+        </a>
+    </div>
+</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <div class="empty-state-icon">
+          <i class="fas fa-sitemap"></i>
+        </div>
+        <h3>Belum Ada Data Struktur</h3>
+        <p>Mulai dengan menambahkan Wali Kelas terlebih dahulu.</p>
+      </div>
+      {% endif %}
+    </div>
+  </section>
+
+  <section id="jadwal-section" class="admin-section {% if active_tab == 'jadwal' %}active{% endif %}">
+    <div class="modern-card">
+      <h2>
+        <i class="fas fa-plus-circle"></i>
+        Tambah Jadwal Pelajaran
+      </h2>
+      <form method="POST" action="{{ url_for('admin_jadwal') }}" class="modern-form">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="hari" class="form-label">Hari</label>
+            <select id="hari" name="hari" class="form-control" required>
+              <option value="">Pilih Hari</option>
+              <option value="Senin">Senin</option>
+              <option value="Selasa">Selasa</option>
+              <option value="Rabu">Rabu</option>
+              <option value="Kamis">Kamis</option>
+              <option value="Jumat">Jumat</option>
+              <option value="Sabtu">Sabtu</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="mata_pelajaran" class="form-label">Mata Pelajaran</label>
+            <input type="text" id="mata_pelajaran" name="mata_pelajaran" class="form-control" placeholder="Contoh: Matematika" required>
+          </div>
+        </div>
+        
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="jam_mulai" class="form-label">Jam Mulai</label>
+            <input type="time" id="jam_mulai" name="jam_mulai" class="form-control" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="jam_selesai" class="form-label">Jam Selesai</label>
+            <input type="time" id="jam_selesai" name="jam_selesai" class="form-control" required>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="guru" class="form-label">Guru Pengajar</label>
+          <input type="text" id="guru" name="guru" class="form-control" placeholder="Nama guru pengajar" required>
+        </div>
+        
+        <button type="submit" class="modern-btn modern-btn-primary">
+          <i class="fas fa-save"></i>
+          Simpan Jadwal
+        </button>
+      </form>
+    </div>
+
+    <div class="modern-card">
+      <h2>
+        <i class="fas fa-list"></i>
+        Daftar Jadwal Pelajaran
+      </h2>
+      {% if jadwal_data %}
+      <div class="modern-table-container">
+        <table class="modern-table">
+          <thead>
+            <tr>
+              <th>Hari</th>
+              <th>Jam</th>
+              <th>Mata Pelajaran</th>
+              <th>Guru</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for jadwal in jadwal_data %}
+            <tr>
+              <td><strong>{{ jadwal['hari'] }}</strong></td>
+              <td>{{ jadwal['jam_mulai'] }} - {{ jadwal['jam_selesai'] }}</td>
+              <td>{{ jadwal['mata_pelajaran'] }}</td>
+              <td>{{ jadwal['guru'] }}</td>
+<td>
+    <div class="action-buttons">
+        <a href="{{ url_for('edit_data', type='jadwal', id=jadwal['id']) }}" 
+           class="action-btn action-btn-edit"
+           title="Edit">
+            <i class="fas fa-edit"></i>
+            <span>Edit</span>
+        </a>
+        <a href="{{ url_for('delete_jadwal', id=jadwal['id']) }}" 
+           class="action-btn action-btn-danger"
+           onclick="return confirm('Yakin ingin menghapus jadwal {{ jadwal['mata_pelajaran'] }}?')"
+           title="Hapus">
+            <i class="fas fa-trash"></i>
+            <span>Hapus</span>
+        </a>
+    </div>
+</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <div class="empty-state-icon">
+          <i class="fas fa-calendar-times"></i>
+        </div>
+        <h3>Belum Ada Jadwal</h3>
+        <p>Mulai dengan menambahkan jadwal pelajaran pertama.</p>
+      </div>
+      {% endif %}
+    </div>
+  </section>
+
+  <section id="piket-section" class="admin-section {% if active_tab == 'piket' %}active{% endif %}">
+    <div class="modern-card">
+      <h2>
+        <i class="fas fa-plus-circle"></i>
+        Tambah Jadwal Piket
+      </h2>
+      <form method="POST" action="{{ url_for('admin_piket') }}" class="modern-form">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="hari_piket" class="form-label">Hari</label>
+            <select id="hari_piket" name="hari" class="form-control" required>
+              <option value="">Pilih Hari</option>
+              <option value="Senin">Senin</option>
+              <option value="Selasa">Selasa</option>
+              <option value="Rabu">Rabu</option>
+              <option value="Kamis">Kamis</option>
+              <option value="Jumat">Jumat</option>
+              <option value="Sabtu">Sabtu</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="nama_siswa" class="form-label">Nama Siswa</label>
+            <input type="text" id="nama_siswa" name="nama_siswa" class="form-control" 
+                   placeholder="Nama siswa" required>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="tugas" class="form-label">Tugas Piket (Opsional)</label>
+          <input type="text" id="tugas" name="tugas" class="form-control" 
+                 placeholder="Contoh: Menyapu kelas">
+        </div>
+        
+        <button type="submit" class="modern-btn modern-btn-primary">
+          <i class="fas fa-save"></i>
+          Simpan Jadwal Piket
+        </button>
+      </form>
+    </div>
+
+    <div class="modern-card">
+      <h2>
+        <i class="fas fa-list"></i>
+        Daftar Jadwal Piket
+      </h2>
+      {% if piket_data %}
+      <div class="modern-table-container">
+        <table class="modern-table">
+          <thead>
+            <tr>
+              <th>Hari</th>
+              <th>Nama Siswa</th>
+              <th>Tugas</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for piket in piket_data %}
+            <tr>
+              <td><strong>{{ piket['hari'] }}</strong></td>
+              <td>{{ piket['nama_siswa'] }}</td>
+              <td>
+                {% if piket['tugas'] %}
+                {{ piket['tugas'] }}
+                {% else %}
+                <span style="color: var(--muted);">-</span>
+                {% endif %}
+              </td>
+              <td>
+    <div class="action-buttons">
+        <a href="{{ url_for('edit_data', type='piket', id=piket['id']) }}" 
+           class="action-btn action-btn-edit"
+           title="Edit">
+            <i class="fas fa-edit"></i>
+            <span>Edit</span>
+        </a>
+        <a href="{{ url_for('delete_piket', id=piket['id']) }}" 
+           class="action-btn action-btn-danger"
+           onclick="return confirm('Yakin ingin menghapus {{ piket['nama_siswa'] }} dari jadwal piket?')"
+           title="Hapus">
+            <i class="fas fa-trash"></i>
+            <span>Hapus</span>
+        </a>
+    </div>
+</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <div class="empty-state-icon">
+          <i class="fas fa-broom"></i>
+        </div>
+        <h3>Belum Ada Jadwal Piket</h3>
+        <p>Mulai dengan menambahkan jadwal piket pertama.</p>
+      </div>
+      {% endif %}
+    </div>
+  </section>
+
+  <section id="galeri-section" class="admin-section {% if active_tab == 'galeri' %}active{% endif %}">
+    <div class="modern-card">
+      <h2>
+        <i class="fas fa-plus-circle"></i>
+        Upload Foto ke Galeri
+      </h2>
+      <form method="POST" action="{{ url_for('admin_galeri') }}" enctype="multipart/form-data" class="modern-form">
+        <div class="form-group">
+          <label for="caption" class="form-label">Keterangan Foto</label>
+          <input type="text" id="caption" name="caption" class="form-control" 
+                 placeholder="Masukkan keterangan" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="foto_galeri" class="form-label">Pilih Foto</label>
+          <input type="file" id="foto_galeri" name="foto" class="form-control" accept="image/*" required>
+          <small class="form-text">Format: JPG, PNG, GIF, WEBP. Maksimal 16MB.</small>
+          <img id="galeri-preview" class="image-preview" alt="Preview">
+        </div>
+        
+        <button type="submit" class="modern-btn modern-btn-primary">
+          <i class="fas fa-upload"></i>
+          Upload Foto
+        </button>
+      </form>
+    </div>
+
+    <div class="modern-card">
+      <h2>Foto</h2>
+      {% if galeri_data %}
+      <div class="modern-gallery">
+        {% for foto in galeri_data %}
+<div class="gallery-card">
+    <img src="{{ url_for('static', filename='img/uploads/' + foto['filename']) }}" 
+         alt="{{ foto['caption'] }}"
+         onerror="this.src='https://via.placeholder.com/300?text=Gambar+Tidak+Tersedia'">
+    <div class="gallery-overlay">
+        <h4>{{ foto['caption'] or 'Tanpa Judul' }}</h4>
+        <small><i class="far fa-calendar"></i> 
+            <span class="uploaded-time" data-timestamp="{{ foto['uploaded_at'] }}">
+                {{ foto['uploaded_at'] }}
+            </span>
+        </small>
+    </div>
+    
+    <!-- TOMBOL ACTION GALERI -->
+    <div class="gallery-actions">
+        <a href="{{ url_for('edit_galeri', id=foto['id']) }}" 
+           class="gallery-edit-btn"
+           title="Edit Caption">
+            <i class="fas fa-edit"></i>
+        </a>
+        <a href="{{ url_for('delete_galeri', id=foto['id']) }}" 
+           class="gallery-delete-btn"
+           onclick="return confirm('Yakin ingin menghapus foto ini?')"
+           title="Hapus Foto">
+            <i class="fas fa-trash"></i>
+        </a>
+    </div>
+</div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <div class="empty-state-icon">
+          <i class="bx bxs-image"></i> 
+        </div>
+        <h3>Belum Ada Foto</h3>
+        <p>Mulai dengan mengupload foto pertama ke galeri.</p>
+      </div>
+      {% endif %}
+    </div>
+  </section>
+  
+  <section id="siswa-section" class="admin-section {% if active_tab == 'siswa' %}active{% endif %}">
+    <div class="modern-card">
+        <h2>
+            <i class="fas fa-plus-circle"></i>
+            Tambah Siswa Baru
+        </h2>
+        <form method="POST" action="{{ url_for('admin_siswa') }}" enctype="multipart/form-data" class="modern-form">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="nama_siswa" class="form-label">Nama Lengkap</label>
+                    <input type="text" id="nama_siswa" name="nama" class="form-control" 
+                           placeholder="Masukkan nama lengkap siswa" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="absen" class="form-label">Nomor Absen</label>
+                    <input type="number" id="absen" name="absen" class="form-control" 
+                           placeholder="Contoh: 1" min="1" required>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="bio_siswa" class="form-label">Bio/Catatan (Opsional)</label>
+                <textarea id="bio_siswa" name="bio" class="form-control" 
+                          placeholder="Deskripsi singkat tentang siswa..."
+                          rows="3"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="foto_siswa" class="form-label">Foto Profil (Opsional)</label>
+                <input type="file" id="foto_siswa" name="foto" class="form-control" accept="image/*">
+                <small class="form-text">Format: JPG, PNG, GIF, WEBP. Maksimal 2MB.</small>
+                <img id="siswa-preview" class="image-preview" alt="Preview">
+            </div>
+            
+            <button type="submit" class="modern-btn modern-btn-primary">
+                <i class="fas fa-save"></i>
+                Simpan Data Siswa
+            </button>
+        </form>
+    </div>
+
+    <div class="modern-card">
+        <h2>
+            <i class="fas fa-list"></i>
+            Daftar Siswa
+        </h2>
+        {% if siswa_data %}
+        <div class="modern-table-container">
+            <table class="modern-table">
+                <thead>
+                    <tr>
+                        <th>Foto</th>
+                        <th>Nama</th>
+                        <th>Absen</th>
+                        <th>Bio</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for siswa in siswa_data %}
+                    <tr>
+                        <td>
+                            {% if siswa['foto'] %}
+                            <img src="{{ url_for('static', filename='img/uploads/siswa/' + siswa['foto']) }}" 
+                                 alt="{{ siswa['nama'] }}" 
+                                 class="profile-img">
+                            {% else %}
+                            <div class="profile-placeholder">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            {% endif %}
+                        </td>
+                        <td><strong>{{ siswa['nama'] }}</strong></td>
+                        <td>{{ siswa['absen'] }}</td>
+                        <td>
+                            {% if siswa['bio'] %}
+                            {{ siswa['bio'] }}
+                            {% else %}
+                            <span style="color: var(--muted);">-</span>
+                            {% endif %}
+                        </td>
+<td>
+    <div class="action-buttons">
+        <a href="{{ url_for('edit_data', type='siswa', id=siswa['id']) }}" 
+           class="action-btn action-btn-edit"
+           title="Edit">
+            <i class="fas fa-edit"></i>
+            <span>Edit</span>
+        </a>
+        <a href="{{ url_for('delete_siswa', id=siswa['id']) }}" 
+           class="action-btn action-btn-danger"
+           onclick="return confirm('Yakin ingin menghapus {{ siswa['nama'] }}?')"
+           title="Hapus">
+            <i class="fas fa-trash"></i>
+            <span>Hapus</span>
+        </a>
+    </div>
+</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">
+                <i class="fas fa-user-graduate"></i>
+            </div>
+            <h3>Belum Ada Data Siswa</h3>
+            <p>Mulai dengan menambahkan siswa pertama.</p>
+        </div>
+        {% endif %}
+    </div>
+  </section>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const activeTabFromUrl = urlParams.get('tab');
+    
+    if (activeTabFromUrl) {
+        const targetSection = activeTabFromUrl + '-section';
+        document.querySelectorAll('.modern-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
+        
+        const activeTabBtn = document.querySelector(`[data-tab="${targetSection}"]`);
+        const activeSection = document.getElementById(targetSection);
+        
+        if (activeTabBtn) activeTabBtn.classList.add('active');
+        if (activeSection) activeSection.classList.add('active');
+        
+        scrollToActiveTab(activeTabBtn);
+    } else {
+        const firstActiveTab = document.querySelector('.modern-tab.active');
+        if (firstActiveTab) {
+            scrollToActiveTab(firstActiveTab);
+        }
+    }
+    
+    function scrollToActiveTab(tabElement) {
+        if (!tabElement) return;
+        
+        const tabsContainer = document.querySelector('.modern-tabs');
+        if (!tabsContainer) return;
+        
+        setTimeout(() => {
+            const tabLeft = tabElement.offsetLeft;
+            const tabWidth = tabElement.offsetWidth;
+            const containerWidth = tabsContainer.offsetWidth;
+            const containerScrollLeft = tabsContainer.scrollLeft;
+            const scrollTo = tabLeft - (containerWidth / 2) + (tabWidth / 2);
+            
+            tabsContainer.scrollTo({
+                left: scrollTo,
+                behavior: 'smooth'
+            });
+        }, 100);
+    }
+    
+    const tabs = document.querySelectorAll('.modern-tab');
+    const sections = document.querySelectorAll('.admin-section');
+    
+    tabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            const targetId = this.dataset.tab;
+            const tabName = targetId.replace('-section', '');
+            
+            const newUrl = new URL(window.location);
+            newUrl.searchParams.set('tab', tabName);
+            window.history.pushState({}, '', newUrl);
+            
+            tabs.forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+            
+            sections.forEach(section => section.classList.remove('active'));
+            
+            const targetSection = document.getElementById(targetId);
+            if (targetSection) {
+                targetSection.classList.add('active');
+            }
+            
+            scrollToActiveTab(this);
+        });
+    });
+    
+    function setupImagePreview(inputId, previewId) {
+        const input = document.getElementById(inputId);
+        const preview = document.getElementById(previewId);
+        
+        if (!input || !preview) return;
+        
+        const newInput = input.cloneNode(true);
+        input.parentNode.replaceChild(newInput, input);
+        
+        newInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            
+            if (!file) {
+                preview.classList.remove('active');
+                preview.src = '';
+                return;
+            }
+            
+            const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+            if (!validTypes.includes(file.type)) {
+                alert('Format file tidak didukung. Gunakan JPG, PNG, GIF, atau WEBP.');
+                newInput.value = '';
+                preview.classList.remove('active');
+                return;
+            }
+            
+            const maxSize = inputId === 'foto_galeri' ? 16 * 1024 * 1024 : 2 * 1024 * 1024;
+            if (file.size > maxSize * 2) {
+                const maxSizeMB = maxSize / (1024 * 1024);
+                alert(`Ukuran file terlalu besar. Maksimal ${maxSizeMB * 2}MB.`);
+                newInput.value = '';
+                preview.classList.remove('active');
+                return;
+            }
+            
+            preview.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Ctext y="50" font-size="14" text-anchor="middle" x="50" fill="%23999"%3EMemproses...%3C/text%3E%3C/svg%3E';
+            preview.classList.add('active');
+            
+            compressImage(file, inputId)
+                .then(compressedFile => {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        preview.src = e.target.result;
+                        preview.classList.add('active');
+                    };
+                    reader.onerror = function() {
+                        alert('Gagal membaca file. Silakan coba lagi.');
+                        preview.classList.remove('active');
+                    };
+                    reader.readAsDataURL(compressedFile);
+                    
+                    const dataTransfer = new DataTransfer();
+                    dataTransfer.items.add(compressedFile);
+                    newInput.files = dataTransfer.files;
+                })
+                .catch(error => {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        preview.src = e.target.result;
+                        preview.classList.add('active');
+                    };
+                    reader.readAsDataURL(file);
+                });
+        });
+    }
+    
+    function compressImage(file, inputId) {
+        return new Promise((resolve, reject) => {
+            const config = {
+                'foto': {
+                    quality: 0.92,
+                    maxWidth: 1200,
+                    maxHeight: 1200,
+                    mimeType: 'image/jpeg',
+                    convertSize: 5000000
+                },
+                'foto_galeri': {
+                    quality: 0.95,
+                    maxWidth: 2560,
+                    maxHeight: 2560,
+                    mimeType: 'image/jpeg',
+                    convertSize: 10000000
+                },
+                'foto_siswa': {
+                    quality: 0.92,
+                    maxWidth: 1000,
+                    maxHeight: 1000,
+                    mimeType: 'image/jpeg',
+                    convertSize: 5000000
+                }
+            };
+            
+            const settings = config[inputId] || config['foto'];
+            
+            if (file.type === 'image/gif') {
+                resolve(file);
+                return;
+            }
+            
+            if (file.size < 500000) {
+                resolve(file);
+                return;
+            }
+            
+            new Compressor(file, {
+                quality: settings.quality,
+                maxWidth: settings.maxWidth,
+                maxHeight: settings.maxHeight,
+                mimeType: settings.mimeType,
+                convertSize: settings.convertSize,
+                checkOrientation: true,
+                retainExif: false,
+                
+                success(result) {
+                    const compressedFile = new File(
+                        [result], 
+                        file.name.replace(/\.[^.]+$/, '.jpg'),
+                        { 
+                            type: settings.mimeType,
+                            lastModified: Date.now()
+                        }
+                    );
+                    resolve(compressedFile);
+                },
+                
+                error(err) {
+                    reject(err);
+                }
+            });
+        });
+    }
+    
+    setupImagePreview('foto', 'foto-preview');
+    setupImagePreview('foto_galeri', 'galeri-preview');
+    setupImagePreview('foto_siswa', 'siswa-preview');
+    
+    const forms = document.querySelectorAll('form');
+    forms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            const requiredFields = this.querySelectorAll('[required]');
+            let isValid = true;
+            let firstInvalidField = null;
+            
+            requiredFields.forEach(field => {
+                if (!field.value.trim()) {
+                    isValid = false;
+                    field.style.borderColor = '#EF4444';
+                    
+                    if (!firstInvalidField) {
+                        firstInvalidField = field;
+                    }
+                    
+                    setTimeout(() => {
+                        field.style.borderColor = '';
+                    }, 2000);
+                } else {
+                    field.style.borderColor = '';
+                }
+            });
+            
+            if (!isValid) {
+                e.preventDefault();
+                alert('Harap isi semua field yang wajib diisi.');
+                
+                if (firstInvalidField) {
+                    firstInvalidField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    firstInvalidField.focus();
+                }
+            }
+        });
+    });
+    
+    const flashMessages = document.querySelectorAll('.flash-message');
+    flashMessages.forEach(msg => {
+        setTimeout(() => {
+            msg.style.opacity = '0';
+            setTimeout(() => msg.remove(), 300);
+        }, 5000);
+    });
+    
+    const deleteLinks = document.querySelectorAll('a[href*="delete"]');
+    deleteLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            if (!this.onclick) {
+                const confirmed = confirm('Apakah Anda yakin ingin menghapus data ini?');
+                if (!confirmed) {
+                    e.preventDefault();
+                }
+            }
+        });
+    });
+    
+    window.addEventListener('popstate', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const activeTabFromUrl = urlParams.get('tab') || 'struktur';
+        const targetSection = activeTabFromUrl + '-section';
+        
+        document.querySelectorAll('.modern-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
+        
+        const activeTabBtn = document.querySelector(`[data-tab="${targetSection}"]`);
+        const activeSection = document.getElementById(targetSection);
+        
+        if (activeTabBtn) activeTabBtn.classList.add('active');
+        if (activeSection) activeSection.classList.add('active');
+        
+        scrollToActiveTab(activeTabBtn);
+    });
+    
+    document.addEventListener('keydown', function(e) {
+        if (e.altKey) {
+            const tabMap = {
+                '1': 'struktur-section',
+                '2': 'jadwal-section',
+                '3': 'piket-section',
+                '4': 'galeri-section',
+                '5': 'siswa-section'
+            };
+            
+            const targetId = tabMap[e.key];
+            if (targetId) {
+                e.preventDefault();
+                const targetTab = document.querySelector(`[data-tab="${targetId}"]`);
+                if (targetTab) {
+                    targetTab.click();
+                }
+            }
+        }
+    });
+    
+    const submitButtons = document.querySelectorAll('button[type="submit"]');
+    submitButtons.forEach(btn => {
+        btn.form.addEventListener('submit', function(e) {
+            setTimeout(() => {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            }, 100);
+        });
+    });
+    
+    function focusFirstInput() {
+        const activeSection = document.querySelector('.admin-section.active');
+        if (activeSection) {
+            const firstInput = activeSection.querySelector('input:not([type="file"]), select, textarea');
+            if (firstInput) {
+                setTimeout(() => {
+                    firstInput.focus();
+                }, 300);
+            }
+        }
+    }
+    
+    focusFirstInput();
+    
+    tabs.forEach(tab => {
+        tab.addEventListener('click', focusFirstInput);
+    });
+    
+    forms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            const submitBtn = this.querySelector('button[type="submit"]');
+            if (submitBtn && !submitBtn.disabled) {
+                const originalText = submitBtn.innerHTML;
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
+                
+                setTimeout(() => {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                }, 5000);
+            }
+        });
+    });
+    
+    const textareas = document.querySelectorAll('textarea');
+    textareas.forEach(textarea => {
+        const maxLength = textarea.getAttribute('maxlength');
+        if (maxLength) {
+            const counter = document.createElement('small');
+            counter.className = 'form-text';
+            counter.style.float = 'right';
+            counter.style.color = 'var(--muted)';
+            textarea.parentNode.appendChild(counter);
+            
+            function updateCounter() {
+                const remaining = maxLength - textarea.value.length;
+                counter.textContent = `${remaining} karakter tersisa`;
+                if (remaining < 20) {
+                    counter.style.color = '#EF4444';
+                } else {
+                    counter.style.color = 'var(--muted)';
+                }
+            }
+            
+            textarea.addEventListener('input', updateCounter);
+            updateCounter();
+        }
+    });
+    
+    const profileImages = document.querySelectorAll('.profile-img');
+    profileImages.forEach(img => {
+        let tooltip = null;
+        
+        img.addEventListener('mouseenter', function(e) {
+            tooltip = document.createElement('div');
+            tooltip.style.position = 'fixed';
+            tooltip.style.zIndex = '10000';
+            tooltip.style.pointerEvents = 'none';
+            tooltip.style.transition = 'opacity 0.2s';
+            tooltip.style.opacity = '0';
+            
+            const previewImg = document.createElement('img');
+            previewImg.src = this.src;
+            previewImg.style.width = '200px';
+            previewImg.style.height = '200px';
+            previewImg.style.objectFit = 'cover';
+            previewImg.style.borderRadius = 'var(--radius)';
+            previewImg.style.boxShadow = '0 8px 32px rgba(0,0,0,0.3)';
+            
+            tooltip.appendChild(previewImg);
+            document.body.appendChild(tooltip);
+            
+            const rect = this.getBoundingClientRect();
+            tooltip.style.left = (rect.right + 10) + 'px';
+            tooltip.style.top = (rect.top - 75) + 'px';
+            
+            setTimeout(() => {
+                tooltip.style.opacity = '1';
+            }, 10);
+        });
+        
+        img.addEventListener('mouseleave', function() {
+            if (tooltip) {
+                tooltip.style.opacity = '0';
+                setTimeout(() => {
+                    if (tooltip && tooltip.parentNode) {
+                        tooltip.parentNode.removeChild(tooltip);
+                    }
+                }, 200);
+            }
+        });
+    });
+    
+    const statNumbers = document.querySelectorAll('.stat-content h3');
+    statNumbers.forEach(stat => {
+        const finalValue = parseInt(stat.textContent);
+        if (isNaN(finalValue)) return;
+        
+        let currentValue = 0;
+        const increment = Math.ceil(finalValue / 30);
+        const duration = 1000;
+        const stepTime = duration / (finalValue / increment);
+        
+        const counter = setInterval(() => {
+            currentValue += increment;
+            if (currentValue >= finalValue) {
+                stat.textContent = finalValue;
+                clearInterval(counter);
+            } else {
+                stat.textContent = currentValue;
+            }
+        }, stepTime);
+    });
+    
+    const tabsContainer = document.querySelector('.modern-tabs');
+    if (tabsContainer) {
+        function updateScrollIndicators() {
+            const scrollLeft = tabsContainer.scrollLeft;
+            const scrollWidth = tabsContainer.scrollWidth;
+            const clientWidth = tabsContainer.clientWidth;
+            const maxScroll = scrollWidth - clientWidth;
+            
+            if (scrollLeft > 10) {
+                tabsContainer.style.boxShadow = 'inset 10px 0 10px -10px rgba(0,0,0,0.2), ' + 
+                                                (scrollLeft < maxScroll - 10 ? 'inset -10px 0 10px -10px rgba(0,0,0,0.2)' : '');
+            } else if (scrollLeft < maxScroll - 10) {
+                tabsContainer.style.boxShadow = 'inset -10px 0 10px -10px rgba(0,0,0,0.2)';
+            } else {
+                tabsContainer.style.boxShadow = 'var(--shadow)';
+            }
+        }
+        
+        tabsContainer.addEventListener('scroll', updateScrollIndicators);
+        window.addEventListener('resize', updateScrollIndicators);
+        
+        setTimeout(updateScrollIndicators, 200);
+    }
+    
+    // Sticky tabs functionality
+    const modernTabs = document.querySelector('.modern-tabs');
+    
+    if (modernTabs) {
+        const observer = new IntersectionObserver(
+            ([e]) => {
+                e.target.classList.toggle('sticky', e.intersectionRatio < 1);
+            },
+            {
+                threshold: [1],
+                rootMargin: '-1px 0px 0px 0px'
+            }
+        );
+
+        observer.observe(modernTabs);
+        
+        // Alternative method untuk browser yang tidak support IntersectionObserver
+        function checkSticky() {
+            const rect = modernTabs.getBoundingClientRect();
+            if (rect.top <= 70) { // Header height
+                modernTabs.classList.add('sticky');
+            } else {
+                modernTabs.classList.remove('sticky');
+            }
+        }
+        
+        // Fallback untuk browser lama
+        if (!window.IntersectionObserver) {
+            window.addEventListener('scroll', checkSticky);
+        }
+    }
+    
+    const galleryCards = document.querySelectorAll('.gallery-card');
+    
+    galleryCards.forEach(card => {
+        // Smooth hover effect
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-6px)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+        });
+        
+        // Touch support untuk mobile
+        card.addEventListener('touchstart', function() {
+            this.classList.add('active');
+        });
+        
+        card.addEventListener('touchend', function() {
+            setTimeout(() => {
+                this.classList.remove('active');
+            }, 300);
+        });
+    });
+});
+
+// Custom Role Handler
+const roleSelect = document.getElementById('role');
+const roleCustomInput = document.getElementById('role-custom');
+
+if (roleSelect && roleCustomInput) {
+    roleSelect.addEventListener('change', function() {
+        if (this.value === 'Custom') {
+            roleCustomInput.style.display = 'block';
+            roleCustomInput.required = true;
+            roleCustomInput.focus();
+        } else {
+            roleCustomInput.style.display = 'none';
+            roleCustomInput.required = false;
+            roleCustomInput.value = '';
+        }
+    });
+}
+
+// Auto-update parent_id requirement based on role
+const parentSelect = document.getElementById('parent_id');
+if (roleSelect && parentSelect) {
+    roleSelect.addEventListener('change', function() {
+        const selectedRole = this.value;
+        const formText = parentSelect.parentElement.querySelector('.form-text');
+        
+        // Wali Kelas tidak butuh atasan
+        if (selectedRole === 'Wali Kelas') {
+            parentSelect.required = false;
+            if (formText) {
+                formText.innerHTML = '<strong style="color: #10b981;">✓ Wali Kelas tidak memerlukan atasan</strong>';
+            }
+        } else {
+            parentSelect.required = true;
+            if (formText) {
+                formText.innerHTML = `
+                    <strong>Panduan:</strong><br>
+                    • <strong>Wali Kelas:</strong> Pilih "Tidak Ada Atasan"<br>
+                    • <strong>Ketua/Wakil:</strong> Pilih "Wali Kelas"<br>
+                    • <strong>Bendahara/Sekretaris:</strong> Pilih "Ketua Kelas" atau "Wakil Ketua Kelas"<br>
+                    • <strong>Seksi-Seksi:</strong> Pilih "Bendahara" atau "Sekretaris"
+                `;
+            }
+        }
+    });
+}
+</script>
+
+{% endblock %}

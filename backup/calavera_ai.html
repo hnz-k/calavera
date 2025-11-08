@@ -1,0 +1,372 @@
+{% extends "base.html" %}
+
+{% block title %}Calavera AI - Coming Soon{% endblock %}
+
+{% block content %}
+<style>
+    .coming-soon-container {
+        min-height: calc(100vh - var(--header-height) - 200px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+    }
+
+    .coming-soon-content {
+        text-align: center;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .ai-icon-wrapper {
+        position: relative;
+        display: inline-block;
+        margin-bottom: 2rem;
+    }
+
+    .ai-icon {
+        font-size: 8rem;
+        background: linear-gradient(135deg, var(--primary), var(--accent));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: float 3s ease-in-out infinite;
+        position: relative;
+        z-index: 2;
+    }
+
+    .ai-icon-bg {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 200px;
+        height: 200px;
+        background: radial-gradient(circle, var(--primary)20, transparent 70%);
+        border-radius: 50%;
+        animation: pulse 2s ease-in-out infinite;
+        z-index: 1;
+    }
+
+    .coming-soon-title {
+        font-size: 3.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        background: linear-gradient(90deg, var(--primary), var(--accent));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: fadeInUp 0.8s ease-out;
+    }
+
+    .coming-soon-subtitle {
+        font-size: 1.5rem;
+        color: var(--muted);
+        margin-bottom: 2rem;
+        animation: fadeInUp 0.8s ease-out 0.2s backwards;
+    }
+
+    .coming-soon-description {
+        font-size: 1.1rem;
+        color: var(--text);
+        line-height: 1.8;
+        margin-bottom: 3rem;
+        animation: fadeInUp 0.8s ease-out 0.4s backwards;
+    }
+
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-top: 3rem;
+        animation: fadeInUp 0.8s ease-out 0.6s backwards;
+    }
+
+    .feature-card {
+        background: var(--surface);
+        padding: 2rem;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        transition: var(--transition);
+        border: 2px solid transparent;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-5px);
+        border-color: var(--primary);
+        box-shadow: 0 12px 32px rgba(15,23,42,0.15);
+    }
+
+    [data-theme="dark"] .feature-card:hover {
+        box-shadow: 0 12px 32px rgba(2,6,23,0.9);
+    }
+
+    .feature-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        background: linear-gradient(135deg, var(--primary), var(--accent));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .feature-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+        color: var(--text);
+    }
+
+    .feature-description {
+        color: var(--muted);
+        font-size: 0.95rem;
+        line-height: 1.6;
+    }
+
+    .notification-banner {
+        background: linear-gradient(135deg, var(--primary), var(--accent));
+        color: white;
+        padding: 1.5rem;
+        border-radius: var(--radius);
+        margin-top: 3rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        animation: fadeInUp 0.8s ease-out 0.8s backwards;
+        box-shadow: 0 8px 24px rgba(67, 97, 193, 0.3);
+    }
+
+    .notification-banner i {
+        font-size: 1.5rem;
+    }
+
+    .notification-text {
+        font-size: 1rem;
+        font-weight: 500;
+    }
+
+    .progress-container {
+        margin-top: 3rem;
+        animation: fadeInUp 0.8s ease-out 1s backwards;
+    }
+
+    .progress-label {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.75rem;
+        font-weight: 500;
+        color: var(--text);
+    }
+
+    .progress-bar-bg {
+        width: 100%;
+        height: 12px;
+        background: var(--bg);
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .progress-bar-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--primary), var(--accent));
+        border-radius: 20px;
+        width: 15%;
+        animation: progressAnimation 2s ease-out;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .progress-bar-fill::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(
+            90deg,
+            transparent,
+            rgba(255,255,255,0.3),
+            transparent
+        );
+        animation: shimmer 2s infinite;
+    }
+
+    @keyframes float {
+        0%, 100% {
+            transform: translateY(0);
+        }
+        50% {
+            transform: translateY(-20px);
+        }
+    }
+
+    @keyframes pulse {
+        0%, 100% {
+            opacity: 0.3;
+            transform: translate(-50%, -50%) scale(1);
+        }
+        50% {
+            opacity: 0.5;
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes progressAnimation {
+        from {
+            width: 0;
+        }
+        to {
+            width: 15%;
+        }
+    }
+
+    @keyframes shimmer {
+        0% {
+            transform: translateX(-100%);
+        }
+        100% {
+            transform: translateX(100%);
+        }
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .ai-icon {
+            font-size: 5rem;
+        }
+
+        .ai-icon-bg {
+            width: 150px;
+            height: 150px;
+        }
+
+        .coming-soon-title {
+            font-size: 2.5rem;
+        }
+
+        .coming-soon-subtitle {
+            font-size: 1.2rem;
+        }
+
+        .coming-soon-description {
+            font-size: 1rem;
+        }
+
+        .features-grid {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .feature-card {
+            padding: 1.5rem;
+        }
+
+        .notification-banner {
+            flex-direction: column;
+            text-align: center;
+            padding: 1.25rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .ai-icon {
+            font-size: 4rem;
+        }
+
+        .coming-soon-title {
+            font-size: 2rem;
+        }
+
+        .coming-soon-subtitle {
+            font-size: 1rem;
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+        }
+
+        .feature-title {
+            font-size: 1.1rem;
+        }
+    }
+</style>
+
+<div class="coming-soon-container">
+    <div class="coming-soon-content">
+        <!-- AI Icon with Background Effect -->
+        <div class="ai-icon-wrapper">
+            <div class="ai-icon-bg"></div>
+            <i class="fas fa-robot ai-icon"></i>
+        </div>
+
+        <!-- Main Title -->
+        <h1 class="coming-soon-title">Coming Soon</h1>
+        <p class="coming-soon-subtitle">Calavera AI sedang dalam pengembangan</p>
+
+        <!-- Description -->
+        <div class="coming-soon-description">
+            <p>
+                Kami sedang mengembangkan asisten AI yang canggih untuk membantu Anda dalam berbagai kebutuhan kelas. 
+                Calavera AI akan hadir dengan fitur-fitur menarik yang akan membuat pengalaman belajar Anda menjadi lebih interaktif dan efisien.
+            </p>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="progress-container">
+            <div class="progress-label">
+                <span>Progress Pengembangan</span>
+                <span>15%</span>
+            </div>
+            <div class="progress-bar-bg">
+                <div class="progress-bar-fill"></div>
+            </div>
+        </div>
+
+        <!-- Features Grid -->
+        <div class="features-grid">
+            <div class="feature-card">
+                <i class="fas fa-comments feature-icon"></i>
+                <h3 class="feature-title">Chat Interaktif</h3>
+                <p class="feature-description">
+                    Tanyakan apa saja tentang materi pelajaran, jadwal, atau informasi kelas
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <i class="fas fa-book-open feature-icon"></i>
+                <h3 class="feature-title">Bantuan Belajar</h3>
+                <p class="feature-description">
+                    Dapatkan penjelasan materi, ringkasan, dan tips belajar dari AI
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <i class="fas fa-lightbulb feature-icon"></i>
+                <h3 class="feature-title">Saran Cerdas</h3>
+                <p class="feature-description">
+                    Rekomendasi personalisasi untuk meningkatkan produktivitas belajar Anda
+                </p>
+            </div>
+        </div>
+
+        <!-- Notification Banner -->
+        <div class="notification-banner">
+            <i class="fas fa-bell"></i>
+            <span class="notification-text">
+                Kami akan memberitahu Anda saat Calavera AI sudah siap digunakan!
+            </span>
+        </div>
+    </div>
+</div>
+{% endblock %}

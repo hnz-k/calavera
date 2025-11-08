@@ -1,0 +1,916 @@
+{% extends "base.html" %}
+
+{% block title %}Galeri - Calavera{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="gallery-hero">
+    <div class="gallery-hero-content">
+        <h1><i class="bx bxs-image"></i> Galeri</h1>
+        <p>Kumpulan momen berharga dan aktivitas kelas kami selama kelas XII</p>
+    </div>
+</div>
+
+{% if galeri_data %}
+<!-- Filter & Stats Bar -->
+<div class="gallery-toolbar">
+<div class="gallery-filters">
+    <button class="filter-btn active" data-filter="newest">
+        <i class="fas fa-arrow-down-short-wide"></i>
+        <span>Terbaru</span>
+    </button>
+    <button class="filter-btn" data-filter="oldest">
+        <i class="fas fa-arrow-up-short-wide"></i>
+        <span>Terlama</span>
+    </button>
+</div>
+    
+    <div class="gallery-stats">
+        <span class="stats-count">{{ galeri_data|length }}</span>
+        <span class="stats-label">Foto</span>
+    </div>
+</div>
+
+<!-- Gallery Grid -->
+<div class="gallery-grid">
+    {% for foto in galeri_data %}
+    <div class="gallery-item" data-id="{{ foto['id'] }}" data-filter="all">
+        <div class="gallery-image-wrapper">
+            <img src="{{ url_for('static', filename='img/uploads/' + foto['filename']) }}" 
+                 alt="{{ foto['caption'] }}" 
+                 class="gallery-image"
+                 loading="lazy"
+                 onerror="this.src='https://via.placeholder.com/800x600?text=Gambar+Tidak+Tersedia'">
+            
+            <!-- Caption Overlay (muncul saat hover) -->
+            <div class="gallery-caption">
+                <h4>{{ foto['caption'] or 'Tanpa Judul' }}</h4>
+                 <small><i class="far fa-calendar"></i> 
+                <span class="uploaded-time" data-timestamp="{{ foto['uploaded_at'] }}">
+                  {{ foto['uploaded_at'] }}
+                  </span>
+                  </small>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="gallery-actions">
+              <button class="gallery-action-btn" 
+        onclick="shareImage(event, '{{ foto['filename'] }}', '{{ foto['caption'] }}')" 
+        title="Bagikan">
+    <i class="fas fa-share-alt"></i>
+</button>
+<button class="gallery-action-btn" 
+        onclick="downloadImage(event, '{{ foto['filename'] }}')" 
+        title="Download">
+    <i class="fas fa-download"></i>
+</button>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Load More Button -->
+<div class="load-more-container">
+    <button class="btn-load-more" id="loadMore">
+        <span class="btn-text">
+            <i class="bx bxs-image"></i>
+            Muat Lebih Banyak
+        </span>
+        <span class="btn-loading" style="display: none;">
+            <i class="fas fa-spinner fa-spin"></i> Memuat...
+        </span>
+    </button>
+</div>
+
+{% else %}
+<!-- Empty State -->
+<div class="gallery-empty">
+    <div class="empty-icon">
+        <i class="bx bxs-image"></i>
+    </div>
+    <h3>Belum Ada Foto</h3>
+    <p>Galeri foto masih kosong. Silakan hubungi admin untuk mengupload foto.</p>
+</div>
+{% endif %}
+
+<style>
+/* ============================================
+   GALLERY HERO SECTION
+   ============================================ */
+.gallery-hero {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+    border-radius: var(--radius);
+    padding: 3rem 2rem;
+    margin-bottom: 2rem;
+    text-align: center;
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+}
+
+.gallery-hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url("{{ url_for('static', filename='img/hero-pattern/skulls.svg') }}");
+    background-repeat: repeat;
+    background-size: 50px 50px;
+    opacity: 0.15;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.gallery-hero-content {
+    position: relative;
+    z-index: 2;
+}
+
+.gallery-hero h1 {
+    color: white;
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.gallery-hero p {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 1.1rem;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* ============================================
+   FILTER & STATS TOOLBAR
+   ============================================ */
+.gallery-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    flex-wrap: wrap;
+}
+
+.gallery-filters {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: var(--bg);
+    border: 2px solid transparent;
+    color: var(--text);
+    border-radius: 9999px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+    min-height: 44px;
+}
+
+.filter-btn:hover {
+    background: var(--primary);
+    color: white;
+    box-shadow: 0 4px 12px rgba(30, 58, 138, 0.2);
+}
+
+.filter-btn i {
+  display: flex;
+  font-size: 1em;
+  line-height: 1;
+  align-items: center;
+}
+
+.filter-btn.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+    box-shadow: 0 4px 12px rgba(30, 58, 138, 0.3);
+}
+
+[data-theme="dark"] .filter-btn:hover,
+[data-theme="dark"] .filter-btn.active {
+    box-shadow: 0 4px 12px rgba(91, 124, 224, 0.4);
+}
+
+.gallery-stats {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 1rem;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    color: white;
+    border-radius: 9999px;
+    font-weight: 600;
+}
+
+.stats-count {
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.stats-label {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+/* ============================================
+   GALLERY GRID LAYOUT
+   ============================================ */
+.gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.gallery-item {
+    position: relative;
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--surface);
+    box-shadow: var(--shadow);
+    transition: var(--transition);
+    cursor: pointer;
+    animation: fadeIn 0.5s ease-out backwards;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Stagger animation untuk setiap item */
+.gallery-item:nth-child(1) { animation-delay: 0.05s; }
+.gallery-item:nth-child(2) { animation-delay: 0.1s; }
+.gallery-item:nth-child(3) { animation-delay: 0.15s; }
+.gallery-item:nth-child(4) { animation-delay: 0.2s; }
+.gallery-item:nth-child(5) { animation-delay: 0.25s; }
+.gallery-item:nth-child(6) { animation-delay: 0.3s; }
+
+.gallery-item:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(15, 23, 42, 0.15);
+}
+
+[data-theme="dark"] .gallery-item:hover {
+    box-shadow: 0 20px 40px rgba(2, 6, 23, 0.8);
+}
+
+.gallery-image-wrapper {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1;
+    overflow: hidden;
+}
+
+.gallery-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: var(--transition);
+}
+
+.gallery-item:hover .gallery-image {
+    transform: scale(1.08);
+}
+
+/* === CAPTION === */
+.gallery-caption {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 1.5rem;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent);
+    color: white;
+    transform: translateY(100%);
+    transition: var(--transition);
+    z-index: 2;
+}
+
+.gallery-item:hover .gallery-caption {
+    transform: translateY(0);
+}
+
+.gallery-caption h4 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: white;
+    line-height: 1.4;
+}
+
+.gallery-caption small {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    opacity: 0.9;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+/* ============================================
+   ACTION BUTTONS
+   ============================================ */
+.gallery-actions {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    display: flex;
+    gap: 0.5rem;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: var(--transition);
+    z-index: 3;
+}
+
+.gallery-item:hover .gallery-actions {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.gallery-action-btn {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(6px);
+    border: none;
+    border-radius: 50%;
+    color: white;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.gallery-action-btn:hover {
+    background: var(--primary);
+    transform: scale(1.15);
+    box-shadow: 0 4px 12px rgba(30, 58, 138, 0.4);
+}
+
+[data-theme="dark"] .gallery-action-btn:hover {
+    background: var(--accent);
+    box-shadow: 0 4px 12px rgba(138, 99, 255, 0.5);
+}
+
+/* ============================================
+   LOAD MORE BUTTON
+   ============================================ */
+.load-more-container {
+    text-align: center;
+    margin: 3rem 0;
+}
+
+.btn-load-more {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 1rem 2.5rem;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    color: white;
+    border: none;
+    border-radius: 9999px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    min-height: 50px;
+    box-shadow: 0 4px 15px rgba(30, 58, 138, 0.3);
+}
+
+.btn-load-more:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(30, 58, 138, 0.4);
+}
+
+.btn-load-more:active {
+    transform: translateY(-1px);
+}
+
+[data-theme="dark"] .btn-load-more {
+    box-shadow: 0 4px 15px rgba(91, 124, 224, 0.4);
+}
+
+[data-theme="dark"] .btn-load-more:hover {
+    box-shadow: 0 8px 25px rgba(91, 124, 224, 0.5);
+}
+
+.btn-loading i {
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+/* ============================================
+   EMPTY STATE
+   ============================================ */
+.gallery-empty {
+    text-align: center;
+    padding: 5rem 2rem;
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    animation: fadeIn 0.6s ease-out;
+}
+
+.empty-icon {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg);
+    border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.05); opacity: 0.8; }
+}
+
+.empty-icon i {
+    font-size: 4rem;
+    color: var(--muted);
+}
+
+.gallery-empty h3 {
+    font-size: 1.8rem;
+    color: var(--text);
+    margin-bottom: 1rem;
+}
+
+.gallery-empty p {
+    font-size: 1.1rem;
+    color: var(--muted);
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+
+/* Tablet */
+@media (max-width: 1024px) {
+    .gallery-hero h1 {
+        font-size: 2rem;
+    }
+    
+    .gallery-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+}
+
+/* Mobile */
+@media (max-width: 767px) {
+    .gallery-hero {
+        padding: 2rem 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .gallery-hero h1 {
+        font-size: 1.5rem;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .gallery-hero h1 i {
+        font-size: 2rem;
+    }
+    
+    .gallery-hero p {
+        font-size: 0.95rem;
+    }
+    
+    .gallery-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 1rem;
+        gap: 1rem;
+    }
+    
+    .gallery-filters {
+        overflow-x: auto;
+        padding-bottom: 0.5rem;
+        scrollbar-width: thin;
+        scrollbar-color: var(--primary) var(--bg);
+        flex-wrap: nowrap;
+    }
+    
+    .gallery-filters::-webkit-scrollbar {
+        height: 6px;
+    }
+    
+    .gallery-filters::-webkit-scrollbar-track {
+        background: var(--bg);
+        border-radius: 3px;
+    }
+    
+    .gallery-filters::-webkit-scrollbar-thumb {
+        background: var(--primary);
+        border-radius: 3px;
+    }
+    
+    .filter-btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.85rem;
+        white-space: nowrap;
+    }
+    
+    .gallery-stats {
+        justify-content: center;
+        border-radius: 24px;
+        padding: 0.3rem 1rem;
+    }
+    
+    .stats-count {
+    font-size: 1.1rem;
+    }
+    
+    .stats-label {
+      font-size: 0.9rem;
+    }
+    
+    .gallery-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .gallery-image-wrapper {
+        aspect-ratio: 1;
+    }
+    
+    /* Tombol aksi selalu terlihat di mobile */
+    .gallery-actions {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    
+    .gallery-caption {
+        padding: 1rem;
+    }
+    
+    .gallery-caption h4 {
+        font-size: 1rem;
+    }
+    
+    .btn-load-more {
+        width: 100%;
+        max-width: 300px;
+    }
+    
+    .gallery-empty {
+        padding: 3rem 1.5rem;
+    }
+    
+    .empty-icon {
+        width: 100px;
+        height: 100px;
+    }
+    
+    .empty-icon i {
+        font-size: 3rem;
+    }
+    
+    .gallery-empty h3 {
+        font-size: 1.5rem;
+    }
+    
+    .gallery-empty p {
+        font-size: 1rem;
+    }
+}
+
+/* Small Mobile */
+@media (max-width: 480px) {
+    .gallery-hero {
+        padding: 1.5rem 1rem;
+    }
+    
+    .gallery-hero h1 {
+        font-size: 1.25rem;
+    }
+    
+    .gallery-hero p {
+        font-size: 0.9rem;
+    }
+    
+    .gallery-toolbar {
+        padding: 0.75rem;
+    }
+    
+    .filter-btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.8rem;
+    }
+    
+    .stats-count {
+        font-size: 1rem;
+    }
+}
+
+/* Desktop Large */
+@media (min-width: 1440px) {
+    .gallery-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* ============================================
+   LIGHTBOX ENHANCEMENTS
+   ============================================ */
+.lightbox-zoom-controls {
+    position: absolute;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 0.5rem;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(10px);
+    padding: 0.5rem;
+    border-radius: 9999px;
+    z-index: 2001;
+}
+
+.lightbox-zoom-btn {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: 50%;
+    color: white;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.lightbox-zoom-btn:hover:not(:disabled) {
+    background: var(--primary);
+    transform: scale(1.1);
+}
+
+.lightbox-zoom-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.lightbox-content-container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    max-width: 90vw;
+    max-height: 90vh;
+}
+
+.lightbox-content {
+    max-width: 100%;
+    max-height: 80vh;
+    border-radius: var(--radius);
+    transition: transform 0.3s ease;
+    cursor: default;
+}
+
+.lightbox-caption {
+    margin-top: 1rem;
+    text-align: center;
+    color: white;
+    font-size: 1.1rem;
+    max-width: 600px;
+}
+</style>
+
+<script>
+// Gallery functionality (terintegrasi dengan GalleryLightbox di script.js)
+function shareImage(event, filename, caption) {
+    event.stopPropagation();
+    event.preventDefault();
+    
+    const imageUrl = `${window.location.origin}/static/img/uploads/${filename}`;
+    
+    if (navigator.share) {
+        navigator.share({
+            title: caption || 'Foto Kelas',
+            text: 'Lihat foto dari galeri kelas kami',
+            url: imageUrl
+        }).catch(err => console.log('Share cancelled', err));
+    } else {
+        navigator.clipboard.writeText(imageUrl).then(() => {
+            showNotification('Link foto telah disalin ke clipboard!', 'success');
+        }).catch(() => {
+            window.open(imageUrl, '_blank');
+        });
+    }
+}
+
+function downloadImage(event, filename) {
+    event.stopPropagation();
+    event.preventDefault();
+    
+    const imageUrl = `${window.location.origin}/static/img/uploads/${filename}`;
+    const link = document.createElement('a');
+    link.href = imageUrl;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showNotification('Download dimulai...', 'success');
+}
+
+function showNotification(message, type) {
+    const notification = document.createElement('div');
+    notification.className = `flash-message ${type}`;
+    notification.innerHTML = `
+        <span>${message}</span>
+        <button class="flash-close" onclick="this.parentElement.remove()">
+            <i class="fas fa-times"></i>
+        </button>
+    `;
+    
+    let container = document.querySelector('.flash-messages');
+    if (!container) {
+        container = document.createElement('div');
+        container.className = 'flash-messages';
+        document.body.appendChild(container);
+    }
+    
+    container.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.opacity = '0';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
+
+// Load more functionality
+let visibleItems = 12; // Global variable
+
+document.addEventListener('DOMContentLoaded', function() {
+    const loadMoreBtn = document.getElementById('loadMore');
+    const galleryItems = document.querySelectorAll('.gallery-item');
+    
+    if (loadMoreBtn && galleryItems.length > 12) {
+        // Hide items beyond initial count
+        galleryItems.forEach((item, index) => {
+            if (index >= visibleItems) {
+                item.style.display = 'none';
+            }
+        });
+        
+        loadMoreBtn.addEventListener('click', function() {
+            const btnText = this.querySelector('.btn-text');
+            const btnLoading = this.querySelector('.btn-loading');
+            
+            // Show loading state
+            btnText.style.display = 'none';
+            btnLoading.style.display = 'flex';
+            this.disabled = true;
+            
+            // Simulate loading
+            setTimeout(() => {
+                visibleItems += 12;
+                
+                // Show next batch of items
+                const currentItems = document.querySelectorAll('.gallery-item');
+                currentItems.forEach((item, index) => {
+                    if (index < visibleItems) {
+                        item.style.display = 'block';
+                    }
+                });
+                
+                // Hide button if all items are visible
+                if (visibleItems >= currentItems.length) {
+                    this.style.display = 'none';
+                } else {
+                    // Reset button state
+                    btnText.style.display = 'flex';
+                    btnLoading.style.display = 'none';
+                    this.disabled = false;
+                }
+                
+                // Smooth scroll to new items
+                const lastVisibleItem = currentItems[Math.min(visibleItems - 1, currentItems.length - 1)];
+                if (lastVisibleItem) {
+                    lastVisibleItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, 800);
+        });
+    } else if (loadMoreBtn && galleryItems.length <= 12) {
+        loadMoreBtn.style.display = 'none';
+    }
+    
+    // Filter functionality - IMPROVED VERSION
+const filterBtns = document.querySelectorAll('.filter-btn');
+const galleryGrid = document.querySelector('.gallery-grid');
+
+filterBtns.forEach(btn => {
+    btn.addEventListener('click', function() {
+        const filter = this.dataset.filter;
+        
+        // Update active button
+        filterBtns.forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        
+        // Get current gallery items
+        const currentItems = document.querySelectorAll('.gallery-item');
+        let itemsArray = Array.from(currentItems);
+        
+        // Sort berdasarkan filter
+        if (filter === 'newest') {
+            // Urutkan dari terbaru ke terlama
+            itemsArray.sort((a, b) => {
+                const timestampA = a.querySelector('.uploaded-time').dataset.timestamp;
+                const timestampB = b.querySelector('.uploaded-time').dataset.timestamp;
+                return new Date(timestampB) - new Date(timestampA);
+            });
+        } else if (filter === 'oldest') {
+            // Urutkan dari terlama ke terbaru
+            itemsArray.sort((a, b) => {
+                const timestampA = a.querySelector('.uploaded-time').dataset.timestamp;
+                const timestampB = b.querySelector('.uploaded-time').dataset.timestamp;
+                return new Date(timestampA) - new Date(timestampB);
+            });
+        }
+        
+        // Clear gallery grid
+        galleryGrid.innerHTML = '';
+        
+        // Append items kembali dengan urutan baru
+        itemsArray.forEach((item, index) => {
+            item.style.display = 'block';
+            // Reset animation delay untuk smooth transition
+            item.style.animationDelay = `${index * 0.05}s`;
+            galleryGrid.appendChild(item);
+        });
+        
+        // Reset load more functionality
+        resetLoadMore();
+    });
+});
+});
+
+// Function untuk reset load more setelah filtering
+function resetLoadMore() {
+    const loadMoreBtn = document.getElementById('loadMore');
+    const allItems = document.querySelectorAll('.gallery-item');
+    
+    if (loadMoreBtn && allItems.length > 12) {
+        // Hide items beyond initial count
+        allItems.forEach((item, index) => {
+            if (index >= 12) {
+                item.style.display = 'none';
+            } else {
+                item.style.display = 'block';
+            }
+        });
+        
+        // Show load more button
+        loadMoreBtn.style.display = 'inline-flex';
+        const btnText = loadMoreBtn.querySelector('.btn-text');
+        const btnLoading = loadMoreBtn.querySelector('.btn-loading');
+        btnText.style.display = 'flex';
+        btnLoading.style.display = 'none';
+        loadMoreBtn.disabled = false;
+        
+        // Reset visible items counter
+        visibleItems = 12;
+    } else if (loadMoreBtn) {
+        loadMoreBtn.style.display = 'none';
+    }
+}
+</script>
+{% endblock %}

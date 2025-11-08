@@ -1,0 +1,1068 @@
+{% extends "base.html" %}
+
+{% block title %}Jadwal - Calavera{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="card schedule-hero">
+    <div class="hero-content">
+        <h1><i class="fas fa-calendar-alt"></i> Jadwal Kelas</h1>
+        <p>Jadwal pelajaran dan piket kelas untuk semester genap tahun ajaran 2024/2025.</p>
+    </div>
+</div>
+
+<!-- Tab Switcher - Modern Pills -->
+<div class="card schedule-tab-container">
+    <div class="schedule-tabs-wrapper">
+        <button class="schedule-tab active" data-schedule="pelajaran">
+            <i class="fas fa-book"></i>
+            <span>Jadwal Pelajaran</span>
+        </button>
+        <button class="schedule-tab" data-schedule="piket">
+            <i class="fas fa-broom"></i>
+            <span>Jadwal Piket</span>
+        </button>
+    </div>
+</div>
+
+<!-- JADWAL PELAJARAN SECTION -->
+<div id="pelajaran-section" class="schedule-section active">
+    {% if jadwal_data %}
+    
+    <!-- Day Filters -->
+    <div class="card filter-card">
+        <div class="filter-wrapper">
+            <button class="day-filter active" data-day="all">
+                <i class="fas fa-calendar"></i> Semua Hari
+            </button>
+            <button class="day-filter" data-day="Senin">Senin</button>
+            <button class="day-filter" data-day="Selasa">Selasa</button>
+            <button class="day-filter" data-day="Rabu">Rabu</button>
+            <button class="day-filter" data-day="Kamis">Kamis</button>
+            <button class="day-filter" data-day="Jumat">Jumat</button>
+            <button class="day-filter" data-day="Sabtu">Sabtu</button>
+        </div>
+    </div>
+
+    <!-- Schedule Days -->
+    {% for hari in ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'] %}
+        {% set hari_jadwal = jadwal_data|selectattr('hari', 'equalto', hari)|list %}
+        {% if hari_jadwal %}
+        <div class="card schedule-day-card" data-day="{{ hari }}">
+            <div class="day-header">
+                <h2><i class="fas fa-calendar-day"></i> {{ hari }}</h2>
+                <span class="day-badge">{{ hari_jadwal|length }} Pelajaran</span>
+            </div>
+            
+            <div class="table-wrapper">
+                <table class="schedule-table">
+                    <thead>
+                        <tr>
+                            <th>Waktu</th>
+                            <th>Mata Pelajaran</th>
+                            <th>Guru</th>
+                            <th>Durasi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for jadwal in hari_jadwal %}
+                        <tr class="schedule-row">
+                            <td class="time-cell">
+                                <div class="time-content">
+                                    <strong>{{ jadwal['jam_mulai'] }}</strong>
+                                    <span class="time-separator">—</span>
+                                    <strong>{{ jadwal['jam_selesai'] }}</strong>
+                                </div>
+                            </td>
+                            <td class="subject-cell">
+                                <span class="subject-name">{{ jadwal['mata_pelajaran'] }}</span>
+                            </td>
+                            <td class="teacher-cell">{{ jadwal['guru'] }}</td>
+                            <td class="duration-cell">
+                                {% set duration = ((jadwal['jam_selesai'][:2]|int * 60 + jadwal['jam_selesai'][3:]|int) - (jadwal['jam_mulai'][:2]|int * 60 + jadwal['jam_mulai'][3:]|int)) / 60 %}
+                                <span class="duration-badge">{{ "%.1f"|format(duration) }} jam</span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+    {% endfor %}
+    
+    {% else %}
+    <div class="card empty-state-card">
+        <div class="empty-state">
+            <i class="fas fa-calendar-times"></i>
+            <h3>Belum Ada Jadwal Pelajaran</h3>
+            <p>Jadwal pelajaran belum tersedia. Silakan hubungi admin untuk informasi lebih lanjut.</p>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- JADWAL PIKET SECTION -->
+<div id="piket-section" class="schedule-section">
+    {% if piket_data %}
+    
+    <!-- Day Filters for Piket -->
+    <div class="card filter-card">
+        <div class="filter-wrapper">
+            <button class="day-filter-piket active" data-day="all">
+                <i class="fas fa-calendar"></i> Semua Hari
+            </button>
+            <button class="day-filter-piket" data-day="Senin">Senin</button>
+            <button class="day-filter-piket" data-day="Selasa">Selasa</button>
+            <button class="day-filter-piket" data-day="Rabu">Rabu</button>
+            <button class="day-filter-piket" data-day="Kamis">Kamis</button>
+            <button class="day-filter-piket" data-day="Jumat">Jumat</button>
+            <button class="day-filter-piket" data-day="Sabtu">Sabtu</button>
+        </div>
+    </div>
+
+    <!-- Piket Days -->
+    {% for hari in ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'] %}
+        {% set hari_piket = piket_data|selectattr('hari', 'equalto', hari)|list %}
+        {% if hari_piket %}
+        <div class="card schedule-day-piket" data-day="{{ hari }}">
+            <div class="day-header">
+                <h2><i class="fas fa-calendar-day"></i> {{ hari }}</h2>
+                <span class="day-badge">{{ hari_piket|length }} Petugas</span>
+            </div>
+            
+            <div class="piket-grid">
+                {% for piket in hari_piket %}
+                <div class="piket-card">
+                    <div class="piket-icon">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                    <div class="piket-details">
+                        <h3 class="piket-name">{{ piket['nama_siswa'] }}</h3>
+                        {% if piket['tugas'] %}
+                        <p class="piket-task">
+                            <i class="fas fa-tasks"></i>
+                            <span>{{ piket['tugas'] }}</span>
+                        </p>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    {% endfor %}
+    
+    {% else %}
+    <div class="card empty-state-card">
+        <div class="empty-state">
+            <i class="fas fa-broom"></i>
+            <h3>Belum Ada Jadwal Piket</h3>
+            <p>Jadwal piket belum tersedia. Silakan hubungi admin untuk informasi lebih lanjut.</p>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+/* ========================================
+   SCHEDULE PAGE - MODERN PREMIUM DESIGN
+   ======================================== */
+
+/* Fix Horizontal Overflow */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    overflow-x: hidden;
+}
+
+.main-content {
+    overflow-x: hidden;
+    max-width: 100%;
+}
+
+/* Hero Section */
+.schedule-hero {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+    color: white;
+    text-align: center;
+    padding: 2.5rem 1.5rem;
+    margin-bottom: 1.5rem;
+    border: none;
+    position: relative;
+    overflow: hidden;
+    animation: fadeInUp 0.5s ease;
+}
+
+.schedule-hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url("{{ url_for('static', filename='img/hero-pattern/skulls.svg') }}");
+    background-repeat: repeat;
+    background-size: 50px 50px;
+    opacity: 0.15;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+}
+
+.hero-content h1 {
+    font-size: clamp(1.75rem, 5vw, 2.5rem);
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.hero-content p {
+    font-size: clamp(0.95rem, 2.5vw, 1.1rem);
+    opacity: 0.95;
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.5;
+}
+
+/* Tab Switcher - Modern Pills */
+.schedule-tab-container {
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    animation: fadeInUp 0.6s ease;
+}
+
+.schedule-tabs-wrapper {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    padding: 0.5rem;
+    -webkit-overflow-scrolling: touch;
+}
+
+.schedule-tabs-wrapper::-webkit-scrollbar {
+    height: 4px;
+}
+
+.schedule-tabs-wrapper::-webkit-scrollbar-track {
+    background: var(--bg);
+    border-radius: 10px;
+}
+
+.schedule-tabs-wrapper::-webkit-scrollbar-thumb {
+    background: var(--muted);
+    border-radius: 10px;
+}
+
+.schedule-tab {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.875rem 1.75rem;
+    border: 2px solid transparent;
+    background: var(--bg);
+    color: var(--text);
+    border-radius: 9999px;
+    cursor: pointer;
+    transition: var(--transition);
+    font-weight: 600;
+    font-size: clamp(0.875rem, 2vw, 1rem);
+    white-space: nowrap;
+    min-height: 44px;
+    flex-shrink: 0;
+}
+
+.schedule-tab i {
+    font-size: 1.15rem;
+}
+
+.schedule-tab:hover:not(.active) {
+    background: var(--surface);
+    transform: translateY(-2px);
+    border-color: var(--primary);
+}
+
+.schedule-tab.active {
+    background: var(--primary);
+    color: white;
+    box-shadow: var(--shadow);
+    border-color: var(--primary);
+}
+
+/* Section Toggle */
+.schedule-section {
+    display: none;
+    animation: fadeIn 0.4s ease;
+}
+
+.schedule-section.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Day Filters - Modern Pills */
+.filter-card {
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    animation: fadeInUp 0.7s ease;
+}
+
+.filter-wrapper {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    padding: 0.5rem;
+    -webkit-overflow-scrolling: touch;
+}
+
+.filter-wrapper::-webkit-scrollbar {
+    height: 4px;
+}
+
+.filter-wrapper::-webkit-scrollbar-track {
+    background: var(--bg);
+    border-radius: 10px;
+}
+
+.filter-wrapper::-webkit-scrollbar-thumb {
+    background: var(--muted);
+    border-radius: 10px;
+}
+
+.day-filter,
+.day-filter-piket {
+    padding: 0.65rem 1.25rem;
+    border: 2px solid var(--bg);
+    background: var(--surface);
+    color: var(--text);
+    border-radius: 9999px;
+    cursor: pointer;
+    transition: var(--transition);
+    font-weight: 500;
+    font-size: clamp(0.825rem, 2vw, 0.95rem);
+    white-space: nowrap;
+    min-height: 40px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.day-filter:hover,
+.day-filter-piket:hover {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+    transform: translateY(-2px);
+}
+
+.day-filter.active,
+.day-filter-piket.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+    box-shadow: var(--shadow);
+}
+
+/* Schedule Day Card */
+.schedule-day-card {
+    margin-bottom: 1.5rem;
+    animation: slideUp 0.4s ease;
+    transition: var(--transition);
+    max-width: 100%;
+    overflow: hidden;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.day-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.875rem;
+    border-bottom: 2px solid var(--bg);
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.day-header h2 {
+    font-size: clamp(1.25rem, 3vw, 1.5rem);
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+}
+
+.day-header h2 i {
+    color: var(--primary);
+}
+
+.day-badge {
+    background: var(--accent);
+    color: white;
+    padding: 0.4rem 0.875rem;
+    border-radius: 9999px;
+    font-size: clamp(0.8rem, 2vw, 0.875rem);
+    font-weight: 600;
+}
+
+/* Table - Modern Premium Design */
+.table-wrapper {
+    overflow-x: auto;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    -webkit-overflow-scrolling: touch;
+    max-width: 100%;
+    width: 100%;
+}
+
+.schedule-table {
+    width: 100%;
+    min-width: 600px;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: var(--surface);
+    table-layout: auto;
+}
+
+.schedule-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--surface);
+}
+
+.schedule-table th {
+    padding: 1rem 1.25rem;
+    text-align: left;
+    font-weight: 600;
+    color: var(--primary);
+    background: var(--bg);
+    border-bottom: 2px solid var(--primary);
+    font-size: clamp(0.825rem, 2vw, 0.95rem);
+    white-space: nowrap;
+}
+
+.schedule-table th i {
+    margin-right: 0.5rem;
+}
+
+.schedule-table tbody tr {
+    transition: var(--transition);
+    border-bottom: 1px solid var(--bg);
+}
+
+.schedule-table tbody tr:nth-child(even) {
+    background: rgba(15, 23, 42, 0.02);
+}
+
+[data-theme="dark"] .schedule-table tbody tr:nth-child(even) {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.schedule-table tbody tr:hover {
+    background: var(--bg);
+    transform: scale(1.001);
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+}
+
+[data-theme="dark"] .schedule-table tbody tr:hover {
+    box-shadow: 0 2px 8px rgba(2, 6, 23, 0.3);
+}
+
+.schedule-table td {
+    padding: 1rem 1.25rem;
+    color: var(--text);
+    word-wrap: break-word;
+    font-size: clamp(0.825rem, 2vw, 0.95rem);
+}
+
+/* Time Cell */
+.time-cell {
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.time-content {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.time-separator {
+    color: var(--muted);
+    font-weight: 400;
+}
+
+/* Subject Cell */
+.subject-name {
+    font-weight: 500;
+}
+
+/* Duration Badge */
+.duration-badge {
+    background: var(--accent);
+    color: white;
+    padding: 0.35rem 0.875rem;
+    border-radius: 9999px;
+    font-size: clamp(0.8rem, 2vw, 0.85rem);
+    font-weight: 600;
+    white-space: nowrap;
+    display: inline-block;
+}
+
+/* Piket Section */
+.schedule-day-piket {
+    margin-bottom: 1.5rem;
+    animation: slideUp 0.4s ease;
+    max-width: 100%;
+    overflow: hidden;
+}
+
+.piket-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1rem;
+    margin-top: 1.25rem;
+    max-width: 100%;
+}
+
+.piket-card {
+    background: var(--bg);
+    padding: 1.25rem;
+    border-radius: var(--radius);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: var(--transition);
+    border: 2px solid transparent;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+}
+
+[data-theme="dark"] .piket-card {
+    box-shadow: 0 2px 8px rgba(2, 6, 23, 0.3);
+}
+
+.piket-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow);
+    border-color: var(--primary);
+}
+
+.piket-icon {
+    font-size: 3rem;
+    color: var(--primary);
+    flex-shrink: 0;
+}
+
+.piket-details {
+    flex: 1;
+    min-width: 0;
+}
+
+.piket-name {
+    font-size: clamp(1rem, 2.5vw, 1.15rem);
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 0.4rem;
+    word-wrap: break-word;
+}
+
+.piket-task {
+    color: var(--muted);
+    font-size: clamp(0.825rem, 2vw, 0.9rem);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+    word-wrap: break-word;
+}
+
+.piket-task i {
+    color: var(--accent);
+    flex-shrink: 0;
+}
+
+/* Empty State */
+.empty-state-card {
+    padding: 3.5rem 1.5rem;
+}
+
+.empty-state {
+    text-align: center;
+    animation: fadeIn 0.5s ease;
+}
+
+.empty-state i {
+    font-size: clamp(3.5rem, 10vw, 5rem);
+    color: var(--muted);
+    opacity: 0.4;
+    margin-bottom: 1.25rem;
+}
+
+.empty-state h3 {
+    font-size: clamp(1.25rem, 4vw, 1.75rem);
+    color: var(--text);
+    margin-bottom: 0.875rem;
+}
+
+.empty-state p {
+    color: var(--muted);
+    font-size: clamp(0.95rem, 2.5vw, 1.05rem);
+    max-width: 500px;
+    margin: 0 auto;
+    line-height: 1.5;
+}
+
+/* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
+
+/* Tablet (768px - 1023px) */
+@media (max-width: 1023px) {
+    .hero-content h1 {
+        font-size: 1.875rem;
+    }
+    
+    .piket-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Mobile (< 768px) */
+@media (max-width: 767px) {
+    body {
+        overflow-x: hidden;
+    }
+    
+    .main-content {
+        padding: 1rem;
+        overflow-x: hidden;
+    }
+    
+    .schedule-hero {
+        padding: 2rem 1.25rem;
+        margin-left: 0;
+        margin-right: 0;
+    }
+    
+    .hero-content h1 {
+        font-size: 1.5rem;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .schedule-tab-container,
+    .filter-card {
+        padding: 0.875rem;
+        margin-left: 0;
+        margin-right: 0;
+    }
+    
+    .card {
+        margin-left: 0;
+        margin-right: 0;
+        max-width: 100%;
+    }
+    
+    .schedule-tab {
+        padding: 0.7rem 1rem;
+        font-size: 0.875rem;
+    }
+    
+    .day-filter,
+    .day-filter-piket {
+        padding: 0.55rem 1rem;
+        font-size: 0.825rem;
+        min-height: 38px;
+    }
+    
+    .day-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+    
+    .schedule-table {
+        min-width: 550px;
+    }
+    
+    .schedule-table th,
+    .schedule-table td {
+        padding: 0.875rem 0.75rem;
+        font-size: 0.825rem;
+    }
+    
+    .piket-grid {
+        grid-template-columns: 1fr;
+        gap: 0.875rem;
+    }
+    
+    .piket-icon {
+        font-size: 2.75rem;
+    }
+    
+    .empty-state i {
+        font-size: 3.5rem;
+    }
+}
+
+/* Extra Small Mobile (< 400px) */
+@media (max-width: 399px) {
+    .main-content {
+        padding: 0.75rem;
+    }
+    
+    .schedule-hero {
+        padding: 1.75rem 1rem;
+        margin-left: 0;
+        margin-right: 0;
+    }
+    
+    .card {
+        padding: 1.25rem;
+        margin-left: 0;
+        margin-right: 0;
+    }
+    
+    .schedule-tab-container,
+    .filter-card {
+        padding: 0.75rem;
+    }
+    
+    .schedule-tab {
+        padding: 0.65rem 1rem;
+        gap: 0.5rem;
+    }
+    
+    .schedule-tab i {
+        font-size: 1rem;
+    }
+    
+    .day-filter,
+    .day-filter-piket {
+        padding: 0.5rem 0.875rem;
+        font-size: 0.8rem;
+    }
+    
+    .schedule-table {
+        min-width: 500px;
+    }
+    
+    .piket-card {
+        padding: 1rem;
+        gap: 0.875rem;
+    }
+    
+    .piket-icon {
+        font-size: 2.5rem;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .schedule-hero,
+    .schedule-tab-container,
+    .filter-card {
+        display: none;
+    }
+    
+    .schedule-section {
+        display: block !important;
+    }
+    
+    .schedule-day-card,
+    .schedule-day-piket {
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+    
+    .card {
+        box-shadow: none;
+        border: 1px solid #ccc;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // ========================================
+    // TAB SWITCHING (Pelajaran vs Piket)
+    // ========================================
+    const scheduleTabs = document.querySelectorAll('.schedule-tab');
+    const scheduleSections = document.querySelectorAll('.schedule-section');
+    
+    scheduleTabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            const scheduleType = this.dataset.schedule;
+            
+            // Update active tab
+            scheduleTabs.forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Show target section
+            scheduleSections.forEach(section => {
+                section.classList.remove('active');
+                if (section.id === scheduleType + '-section') {
+                    section.classList.add('active');
+                }
+            });
+            
+            // Smooth scroll to top of section
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+    });
+    
+    // ========================================
+    // DAY FILTERS - Jadwal Pelajaran
+    // ========================================
+    const dayFilters = document.querySelectorAll('.day-filter');
+    const scheduleDays = document.querySelectorAll('.schedule-day-card');
+    
+    dayFilters.forEach(filter => {
+        filter.addEventListener('click', function() {
+            const day = this.dataset.day;
+            
+            // Update active filter
+            dayFilters.forEach(f => f.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Show/hide schedule days with animation
+            scheduleDays.forEach(dayElement => {
+                if (day === 'all' || dayElement.dataset.day === day) {
+                    dayElement.style.display = 'block';
+                    dayElement.style.animation = 'slideUp 0.4s ease';
+                } else {
+                    dayElement.style.display = 'none';
+                }
+            });
+        });
+    });
+    
+    // ========================================
+    // DAY FILTERS - Jadwal Piket
+    // ========================================
+    const dayFiltersPiket = document.querySelectorAll('.day-filter-piket');
+    const scheduleDaysPiket = document.querySelectorAll('.schedule-day-piket');
+    
+    dayFiltersPiket.forEach(filter => {
+        filter.addEventListener('click', function() {
+            const day = this.dataset.day;
+            
+            // Update active filter
+            dayFiltersPiket.forEach(f => f.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Show/hide piket days with animation
+            scheduleDaysPiket.forEach(dayElement => {
+                if (day === 'all' || dayElement.dataset.day === day) {
+                    dayElement.style.display = 'block';
+                    dayElement.style.animation = 'slideUp 0.4s ease';
+                } else {
+                    dayElement.style.display = 'none';
+                }
+            });
+        });
+    });
+    
+    // ========================================
+    // AUTO HIGHLIGHT & FILTER TODAY
+    // ========================================
+    const today = new Date().toLocaleDateString('id-ID', { weekday: 'long' });
+    const dayMap = {
+        'Minggu': 'Minggu',
+        'Senin': 'Senin',
+        'Selasa': 'Selasa',
+        'Rabu': 'Rabu',
+        'Kamis': 'Kamis',
+        'Jumat': 'Jumat',
+        'Sabtu': 'Sabtu'
+    };
+    
+    const todayInIndonesian = dayMap[today];
+    
+    // Auto-filter untuk Jadwal Pelajaran (hari ini)
+    if (todayInIndonesian && todayInIndonesian !== 'Minggu') {
+        dayFilters.forEach(filter => {
+            if (filter.dataset.day === todayInIndonesian) {
+                // Remove active from "Semua Hari"
+                dayFilters.forEach(f => f.classList.remove('active'));
+                
+                // Set hari ini sebagai active
+                filter.classList.add('active');
+                filter.style.borderColor = 'var(--accent)';
+                filter.style.boxShadow = '0 0 0 2px rgba(109, 40, 217, 0.2)';
+                
+                // Filter hanya tampilkan hari ini
+                scheduleDays.forEach(dayElement => {
+                    if (dayElement.dataset.day === todayInIndonesian) {
+                        dayElement.style.display = 'block';
+                        dayElement.style.animation = 'slideUp 0.4s ease';
+                    } else {
+                        dayElement.style.display = 'none';
+                    }
+                });
+                
+                // Scroll filter button ke view
+                filter.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            }
+        });
+    }
+    
+    // Auto-filter untuk Jadwal Piket (hari ini)
+    if (todayInIndonesian && todayInIndonesian !== 'Minggu') {
+        dayFiltersPiket.forEach(filter => {
+            if (filter.dataset.day === todayInIndonesian) {
+                // Remove active from "Semua Hari"
+                dayFiltersPiket.forEach(f => f.classList.remove('active'));
+                
+                // Set hari ini sebagai active
+                filter.classList.add('active');
+                filter.style.borderColor = 'var(--accent)';
+                filter.style.boxShadow = '0 0 0 2px rgba(109, 40, 217, 0.2)';
+                
+                // Filter hanya tampilkan hari ini
+                scheduleDaysPiket.forEach(dayElement => {
+                    if (dayElement.dataset.day === todayInIndonesian) {
+                        dayElement.style.display = 'block';
+                        dayElement.style.animation = 'slideUp 0.4s ease';
+                    } else {
+                        dayElement.style.display = 'none';
+                    }
+                });
+                
+                // Scroll filter button ke view
+                filter.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            }
+        });
+    }
+    
+    // ========================================
+    // SMOOTH SCROLL FOR HORIZONTAL FILTERS
+    // ========================================
+    const filterWrappers = document.querySelectorAll('.filter-wrapper, .schedule-tabs-wrapper');
+    
+    filterWrappers.forEach(wrapper => {
+        let isDown = false;
+        let startX;
+        let scrollLeft;
+        
+        wrapper.addEventListener('mousedown', (e) => {
+            isDown = true;
+            wrapper.style.cursor = 'grabbing';
+            startX = e.pageX - wrapper.offsetLeft;
+            scrollLeft = wrapper.scrollLeft;
+        });
+        
+        wrapper.addEventListener('mouseleave', () => {
+            isDown = false;
+            wrapper.style.cursor = 'grab';
+        });
+        
+        wrapper.addEventListener('mouseup', () => {
+            isDown = false;
+            wrapper.style.cursor = 'grab';
+        });
+        
+        wrapper.addEventListener('mousemove', (e) => {
+            if (!isDown) return;
+            e.preventDefault();
+            const x = e.pageX - wrapper.offsetLeft;
+            const walk = (x - startX) * 2;
+            wrapper.scrollLeft = scrollLeft - walk;
+        });
+    });
+    
+    // ========================================
+    // KEYBOARD NAVIGATION
+    // ========================================
+    document.addEventListener('keydown', function(e) {
+        // Switch tabs with 1 and 2 keys
+        if (e.key === '1') {
+            scheduleTabs[0].click();
+        } else if (e.key === '2' && scheduleTabs[1]) {
+            scheduleTabs[1].click();
+        }
+    });
+    
+    // ========================================
+    // LOADING ANIMATION (INTERSECTION OBSERVER)
+    // ========================================
+    const cards = document.querySelectorAll('.card');
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '0';
+                entry.target.style.transform = 'translateY(20px)';
+                
+                setTimeout(() => {
+                    entry.target.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }, 100);
+                
+                observer.unobserve(entry.target);
+            }
+        });
+    }, observerOptions);
+    
+    cards.forEach(card => {
+        observer.observe(card);
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,579 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Caption Galeri - Calavera{% endblock %}
+
+{% block content %}
+<style>
+/* ===== EDIT GALERI PAGE STYLES ===== */
+.edit-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 1rem;
+  animation: fadeInUp 0.6s ease;
+}
+
+.edit-header {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+  border-radius: var(--radius);
+  padding: 2.5rem 2rem;
+  margin-bottom: 2rem;
+  color: white;
+  box-shadow: var(--shadow);
+  position: relative;
+  overflow: hidden;
+}
+
+.edit-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url("{{ url_for('static', filename='img/hero-pattern/skulls.svg') }}");
+  background-repeat: repeat;
+  background-size: 50px 50px;
+  opacity: 0.15;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.edit-header-content {
+  position: relative;
+  z-index: 2;
+}
+
+.edit-header h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.edit-header h1 i {
+  font-size: 1.75rem;
+}
+
+.edit-header p {
+  font-size: 1rem;
+  opacity: 0.95;
+  font-weight: 400;
+  margin: 0;
+}
+
+.edit-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 2.5rem;
+  box-shadow: var(--shadow);
+  border: 1px solid transparent;
+  transition: all var(--transition);
+  margin-bottom: 2rem;
+}
+
+.edit-card:hover {
+  border-color: var(--primary);
+  box-shadow: 0 12px 40px rgba(15,23,42,0.1);
+}
+
+[data-theme="dark"] .edit-card:hover {
+  box-shadow: 0 12px 40px rgba(2,6,23,0.9);
+}
+
+.edit-image-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+
+.edit-image-container > div {
+  text-align: center;
+}
+
+.edit-image-container img {
+  max-width: 300px;
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius);
+  border: 2px dashed var(--primary);
+  transition: all var(--transition);
+}
+
+.edit-image-preview-wrapper {
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  transition: all var(--transition);
+}
+
+.edit-image-clickable {
+  object-fit: contain;
+  max-height: 600px;
+  margin: 0 auto;
+  display: block;
+}
+
+.edit-image-container img:hover {
+  transform: scale(1.02);
+}
+
+[data-theme="dark"] .edit-image-preview-wrapper {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* Hover effect untuk lightbox */
+.edit-image-preview-wrapper:hover {
+  box-shadow: 0 8px 32px rgba(30, 58, 138, 0.2);
+}
+
+[data-theme="dark"] .edit-image-preview-wrapper:hover {
+  box-shadow: 0 8px 32px rgba(91, 124, 224, 0.3);
+}
+
+.edit-image-preview-wrapper:hover .edit-image-clickable {
+  transform: scale(1.05);
+}
+
+.edit-image-preview-wrapper:hover .image-overlay-hint {
+  opacity: 1 !important;
+}
+
+[data-theme="dark"] .edit-image-container img:hover {
+  box-shadow: 0 8px 32px rgba(91, 124, 224, 0.3);
+}
+
+.edit-form {
+  width: 100%;
+}
+
+.edit-form-group {
+  margin-bottom: 1.5rem;
+}
+
+.edit-form-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+  font-weight: 600;
+  color: var(--text);
+  font-size: 0.95rem;
+  gap: 0.5rem;
+}
+
+.edit-form-label .label-text {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.edit-form-label .char-counter {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--muted);
+  transition: color var(--transition);
+}
+
+.edit-form-label i {
+  color: var(--primary);
+  font-size: 0.9rem;
+}
+
+.char-counter.warning {
+  color: #f59e0b !important;
+}
+
+.char-counter.danger {
+  color: #EF4444 !important;
+}
+
+.edit-form-control {
+  width: 100%;
+  padding: 1rem 1.25rem;
+  border: 2px solid var(--bg);
+  border-radius: calc(var(--radius) - 2px);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 1rem;
+  transition: all var(--transition);
+  font-family: inherit;
+}
+
+.edit-form-control:focus {
+  outline: none;
+  border-color: var(--primary);
+  background: var(--surface);
+  box-shadow: 0 0 0 4px rgba(30, 58, 138, 0.08);
+  transform: translateY(-1px);
+}
+
+[data-theme="dark"] .edit-form-control:focus {
+  box-shadow: 0 0 0 4px rgba(91, 124, 224, 0.15);
+}
+
+.edit-form-text {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+/* Button Styles */
+.edit-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2.5rem;
+  flex-wrap: wrap;
+}
+
+.edit-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1rem 2rem;
+  border: none;
+  border-radius: calc(var(--radius) - 2px);
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all var(--transition);
+  text-decoration: none;
+  min-height: 54px;
+  flex: 1;
+  min-width: 160px;
+}
+
+.edit-btn-primary {
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  color: white;
+  box-shadow: 0 4px 16px rgba(30, 58, 138, 0.3);
+}
+
+.edit-btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(30, 58, 138, 0.4);
+}
+
+.edit-btn-secondary {
+  background: var(--bg);
+  color: var(--text);
+  border: 2px solid var(--muted);
+}
+
+.edit-btn-secondary:hover {
+  background: var(--surface);
+  border-color: var(--primary);
+  transform: translateY(-2px);
+}
+
+/* Loading State */
+.edit-btn.loading {
+  position: relative;
+  color: transparent;
+}
+
+.edit-btn.loading::after {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* Animation Keyframes */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .edit-container {
+    padding: 0 0.5rem;
+  }
+  
+  .edit-header {
+    padding: 2rem 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .edit-header h1 {
+    font-size: 1.5rem;
+  }
+  
+  .edit-header p {
+    font-size: 0.9rem;
+  }
+  
+  .edit-card {
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .edit-image-container > div {
+    max-width: 400px !important;
+  }
+  
+  .edit-image-clickable {
+    max-height: 400px;
+  }
+  
+  .edit-form-group {
+    margin-bottom: 1rem;
+  }
+  
+  .edit-form-control {
+    padding: 0.875rem 1rem;
+  }
+  
+  .edit-actions {
+    margin-top: 2rem;
+    gap: 0.75rem;
+  }
+  
+  .edit-btn {
+    padding: 0.875rem 1.5rem;
+    min-height: 50px;
+    flex: 1 1 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .edit-header {
+    padding: 1.5rem 1rem;
+    text-align: center;
+  }
+  
+  .edit-header h1 {
+    justify-content: center;
+    font-size: 1.25rem;
+  }
+  
+  .edit-card {
+    padding: 1.25rem;
+    border-radius: calc(var(--radius) - 4px);
+  }
+  
+  .edit-image-container > div {
+    max-width: 100% !important;
+  }
+  
+  .edit-image-clickable {
+    max-height: 300px;
+  }
+  
+  .edit-form-label {
+    font-size: 0.9rem;
+  }
+  
+  .edit-form-label .label-text {
+    gap: 0.35rem;
+  }
+  
+  .edit-form-label .label-text i {
+    font-size: 0.85rem;
+  }
+  
+  .edit-form-label .char-counter {
+    font-size: 0.8rem;
+  }
+  
+  .edit-form-control {
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+  }
+  
+  .edit-btn {
+    padding: 0.75rem 1.25rem;
+    font-size: 0.9rem;
+    min-height: 48px;
+  }
+}
+
+/* Dark mode enhancements */
+[data-theme="dark"] .edit-btn-secondary {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--muted);
+}
+
+[data-theme="dark"] .edit-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Print styles */
+@media print {
+  .edit-header {
+    background: none !important;
+    color: black !important;
+    box-shadow: none !important;
+  }
+  
+  .edit-card {
+    box-shadow: none !important;
+    border: 1px solid #ccc !important;
+  }
+  
+  .edit-btn {
+    display: none !important;
+  }
+}
+</style>
+
+<div class="edit-container">
+    <div class="edit-header">
+        <div class="edit-header-content">
+            <h1>
+                <i class="fas fa-edit"></i>
+                Edit Caption Foto
+            </h1>
+            <p>Edit keterangan untuk foto galeri</p>
+        </div>
+    </div>
+
+    <div class="edit-card">
+        <div class="edit-image-container">
+            <div style="width: 100%; max-width: 500px; margin: 0 auto;">
+                <div class="edit-image-preview-wrapper" style="width: 100%; border-radius: var(--radius); overflow: hidden; position: relative; cursor: pointer;">
+                    <img src="{{ url_for('static', filename='img/uploads/' + item.filename) }}" 
+                         alt="{{ item.caption }}"
+                         class="edit-image-clickable"
+                         data-lightbox-src="{{ url_for('static', filename='img/uploads/' + item.filename) }}"
+                         data-lightbox-caption="{{ item.caption }}"
+                         style="width: 100%; height: auto; display: block; transition: transform var(--transition);">
+                    
+                    <!-- Overlay hint untuk klik -->
+                    <div class="image-overlay-hint" style="position: absolute; inset: 0; background: rgba(0,0,0,0.3); opacity: 0; transition: opacity var(--transition); display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem; pointer-events: none;">
+                        <i class="fas fa-search-plus"></i>
+                    </div>
+                </div>
+                <div class="edit-form-text" style="margin-top: 1rem; text-align: center;">
+                    <i class="fas fa-info-circle"></i> Klik gambar untuk melihat detail
+                    <br>
+                    <small>
+                Foto saat ini • Diupload pada: {{ item.uploaded_at|default('Unknown', true) }}
+            </small>
+                </div>
+            </div>
+        </div>
+
+        <form method="POST" action="{{ url_for('edit_galeri', id=item.id) }}" class="edit-form">
+            <div class="edit-form-group">
+                <label for="caption" class="edit-form-label">
+                    <span class="label-text">
+                        <i class="fas fa-pencil-alt"></i>
+                        Keterangan Foto
+                    </span>
+                    <span class="char-counter" id="charCounter">0/50</span>
+                </label>
+                <input type="text" id="caption" name="caption" class="edit-form-control" 
+                       value="{{ item.caption or '' }}"
+                       placeholder="Masukkan keterangan foto..."
+                       maxlength="50"
+                       required>
+                <small class="edit-form-text">
+                    Maksimal 50 karakter. Keterangan akan ditampilkan di bawah foto.
+                </small>
+            </div>
+            
+            <div class="edit-actions">
+                <button type="submit" class="edit-btn edit-btn-primary">
+                    <i class="fas fa-save"></i>
+                    Update Caption
+                </button>
+                <a href="{{ url_for('admin_galeri') }}?tab=galeri" class="edit-btn edit-btn-secondary">
+                    <i class="fas fa-arrow-left"></i>
+                    Kembali ke Galeri
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-focus caption field
+    const captionInput = document.getElementById('caption');
+    if (captionInput) {
+        setTimeout(() => {
+            captionInput.focus();
+            captionInput.select();
+        }, 300);
+    }
+
+    // Character counter
+    const captionField = document.getElementById('caption');
+    const counter = document.getElementById('charCounter');
+    
+    if (captionField && counter) {
+        function updateCounter() {
+            const currentLength = captionField.value.length;
+            const maxLength = 50;
+            counter.textContent = `${currentLength}/${maxLength}`;
+            
+            // Remove all color classes first
+            counter.classList.remove('warning', 'danger');
+            
+            // Add color class based on remaining characters
+            const remaining = maxLength - currentLength;
+            if (remaining < 5) {
+                counter.classList.add('danger');
+            } else if (remaining < 10) {
+                counter.classList.add('warning');
+            }
+        }
+        
+        captionField.addEventListener('input', updateCounter);
+        updateCounter(); // Initial update
+    }
+
+    // Form submission loading state
+    const form = document.querySelector('.edit-form');
+    const submitBtn = form.querySelector('button[type="submit"]');
+    
+    form.addEventListener('submit', function() {
+        submitBtn.classList.add('loading');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
+    });
+
+    // Lightbox functionality untuk gambar
+    const clickableImage = document.querySelector('.edit-image-clickable');
+    if (clickableImage && typeof GalleryLightbox !== 'undefined') {
+        clickableImage.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Buat temporary lightbox instance
+            const tempLightbox = new GalleryLightbox();
+            tempLightbox.images = [{
+                src: this.dataset.lightboxSrc || this.src,
+                caption: this.dataset.lightboxCaption || this.alt
+            }];
+            tempLightbox.open(0);
+        });
+    }
+});
+</script>
+{% endblock %}

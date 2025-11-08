@@ -1,0 +1,849 @@
+{% extends "base.html" %}
+
+{% block title %}Edit {{ type|title }} - Calavera{% endblock %}
+
+{% block content %}
+<style>
+  /* ===== EDIT PAGE STYLES ===== */
+.edit-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 1rem;
+  animation: fadeInUp 0.6s ease;
+}
+
+.edit-header {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+  border-radius: var(--radius);
+  padding: 2.5rem 2rem;
+  margin-bottom: 2rem;
+  color: white;
+  box-shadow: var(--shadow);
+  position: relative;
+  overflow: hidden;
+}
+
+.edit-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url("{{ url_for('static', filename='img/hero-pattern/skulls.svg') }}");
+  background-repeat: repeat;
+  background-size: 50px 50px;
+  opacity: 0.15;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.edit-header-content {
+  position: relative;
+  z-index: 2;
+}
+
+.edit-header h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.edit-header h1 i {
+  font-size: 1.75rem;
+}
+
+.edit-header p {
+  font-size: 1rem;
+  opacity: 0.95;
+  font-weight: 400;
+  margin: 0;
+}
+
+.edit-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 2.5rem;
+  box-shadow: var(--shadow);
+  border: 1px solid transparent;
+  transition: all var(--transition);
+  margin-bottom: 2rem;
+}
+
+.edit-card:hover {
+  border-color: var(--primary);
+  box-shadow: 0 12px 40px rgba(15,23,42,0.1);
+}
+
+[data-theme="dark"] .edit-card:hover {
+  box-shadow: 0 12px 40px rgba(2,6,23,0.9);
+}
+
+.edit-form {
+  width: 100%;
+}
+
+.edit-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.edit-form-group {
+  margin-bottom: 1.5rem;
+}
+
+.edit-form-label {
+  display: block;
+  margin-bottom: 0.75rem;
+  font-weight: 600;
+  color: var(--text);
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.edit-form-label i {
+  color: var(--primary);
+  font-size: 0.9rem;
+}
+
+.edit-form-control {
+  width: 100%;
+  padding: 1rem 1.25rem;
+  border: 2px solid var(--bg);
+  border-radius: calc(var(--radius) - 2px);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 1rem;
+  transition: all var(--transition);
+  font-family: inherit;
+  resize: vertical;
+}
+
+.edit-form-control:focus {
+  outline: none;
+  border-color: var(--primary);
+  background: var(--surface);
+  box-shadow: 0 0 0 4px rgba(30, 58, 138, 0.08);
+  transform: translateY(-1px);
+}
+
+[data-theme="dark"] .edit-form-control:focus {
+  box-shadow: 0 0 0 4px rgba(91, 124, 224, 0.15);
+}
+
+.edit-form-text {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.edit-form-text strong {
+  color: var(--text);
+}
+
+/* File Input Styling */
+.edit-file-input {
+  position: relative;
+  overflow: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+.edit-file-input input[type="file"] {
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+
+.edit-file-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  background: var(--bg);
+  border: 2px dashed var(--muted);
+  border-radius: calc(var(--radius) - 2px);
+  color: var(--text);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition);
+  text-align: center;
+}
+
+.edit-file-label:hover {
+  border-color: var(--primary);
+  background: var(--surface);
+  transform: translateY(-1px);
+}
+
+.edit-file-label i {
+  font-size: 1.25rem;
+  color: var(--primary);
+}
+
+/* Image Preview */
+.edit-image-preview {
+  width: 100%;
+  max-width: 200px;
+  height: 200px;
+  border-radius: var(--radius);
+  object-fit: cover;
+  margin-top: 1rem;
+  border: 3px solid var(--bg);
+  box-shadow: var(--shadow);
+  transition: all var(--transition);
+  display: none;
+}
+
+.edit-image-preview.active {
+  display: block;
+  animation: scaleIn 0.3s ease;
+}
+
+.edit-current-image {
+  width: 100%;
+  max-width: 120px;
+  height: 120px;
+  border-radius: var(--radius);
+  object-fit: cover;
+  margin-bottom: 1rem;
+  border: 3px solid var(--primary);
+  box-shadow: var(--shadow);
+}
+
+.edit-image-container {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+/* Button Styles */
+.edit-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2.5rem;
+  flex-wrap: wrap;
+}
+
+.edit-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1rem 2rem;
+  border: none;
+  border-radius: calc(var(--radius) - 2px);
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all var(--transition);
+  text-decoration: none;
+  min-height: 54px;
+  flex: 1;
+  min-width: 160px;
+}
+
+.edit-btn-primary {
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  color: white;
+  box-shadow: 0 4px 16px rgba(30, 58, 138, 0.3);
+}
+
+.edit-btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(30, 58, 138, 0.4);
+}
+
+.edit-btn-secondary {
+  background: var(--bg);
+  color: var(--text);
+  border: 2px solid var(--muted);
+}
+
+.edit-btn-secondary:hover {
+  background: var(--surface);
+  border-color: var(--primary);
+  transform: translateY(-2px);
+}
+
+/* Custom Select Styling */
+.edit-select-wrapper {
+  position: relative;
+}
+
+.edit-select-wrapper::after {
+  content: '▼';
+  position: absolute;
+  top: 50%;
+  right: 1.25rem;
+  transform: translateY(-50%);
+  color: var(--muted);
+  pointer-events: none;
+  font-size: 0.8rem;
+}
+
+.edit-form-control.select {
+  appearance: none;
+  padding-right: 3rem;
+}
+
+/* Role Custom Input Animation */
+#role-custom {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Loading State */
+.edit-btn.loading {
+  position: relative;
+  color: transparent;
+}
+
+.edit-btn.loading::after {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* Success State */
+.edit-btn.success {
+  background: linear-gradient(135deg, #10B981, #059669);
+}
+
+/* Animation Keyframes */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .edit-container {
+    padding: 0 0.5rem;
+  }
+  
+  .edit-header {
+    padding: 2rem 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .edit-header h1 {
+    font-size: 1.5rem;
+  }
+  
+  .edit-header p {
+    font-size: 0.9rem;
+  }
+  
+  .edit-card {
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .edit-form-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .edit-form-group {
+    margin-bottom: 1rem;
+  }
+  
+  .edit-form-control {
+    padding: 0.875rem 1rem;
+  }
+  
+  .edit-actions {
+    margin-top: 2rem;
+    gap: 0.75rem;
+  }
+  
+  .edit-btn {
+    padding: 0.875rem 1.5rem;
+    min-height: 50px;
+    flex: 1 1 100%;
+  }
+  
+  .edit-image-preview {
+    max-width: 150px;
+    height: 150px;
+  }
+  
+  .edit-current-image {
+    max-width: 100px;
+    height: 100px;
+  }
+}
+
+@media (max-width: 480px) {
+  .edit-header {
+    padding: 1.5rem 1rem;
+    text-align: center;
+  }
+  
+  .edit-header h1 {
+    justify-content: center;
+    font-size: 1.25rem;
+  }
+  
+  .edit-card {
+    padding: 1.25rem;
+    border-radius: calc(var(--radius) - 4px);
+  }
+  
+  .edit-form-control {
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+  }
+  
+  .edit-btn {
+    padding: 0.75rem 1.25rem;
+    font-size: 0.9rem;
+    min-height: 48px;
+  }
+  
+  .edit-image-container {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+}
+
+/* Dark mode enhancements */
+[data-theme="dark"] .edit-file-label {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--muted);
+}
+
+[data-theme="dark"] .edit-file-label:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .edit-btn-secondary {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--muted);
+}
+
+[data-theme="dark"] .edit-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Print styles */
+@media print {
+  .edit-header {
+    background: none !important;
+    color: black !important;
+    box-shadow: none !important;
+  }
+  
+  .edit-card {
+    box-shadow: none !important;
+    border: 1px solid #ccc !important;
+  }
+  
+  .edit-btn {
+    display: none !important;
+  }
+}
+</style>
+
+<div class="edit-container">
+    <div class="edit-header">
+        <div class="edit-header-content">
+            <h1>
+                Edit {{ type|replace('_', ' ')|title }}
+            </h1>
+            <p>Edit data <strong>"{% if type == 'jadwal' %}{{ item.mata_pelajaran }}{% elif type == 'piket' %}{{ item.nama_siswa }}{% else %}{{ item.nama }}{% endif %}"</strong></p>
+        </div>
+    </div>
+
+    <div class="edit-card">
+        <form method="POST" action="{{ url_for('edit_data', type=type, id=item.id) }}" 
+              enctype="multipart/form-data" class="edit-form">
+            
+            {% if type == 'struktur' %}
+            <!-- FORM EDIT STRUKTUR -->
+            <div class="edit-form-grid">
+                <div class="edit-form-group">
+                    <label for="nama" class="edit-form-label">
+                        <i class="fas fa-user"></i>
+                        Nama Lengkap
+                    </label>
+                    <input type="text" id="nama" name="nama" class="edit-form-control" 
+                           value="{{ item.nama }}" required>
+                </div>
+                
+                <div class="edit-form-group">
+                    <label for="role" class="edit-form-label">
+                        <i class="fas fa-briefcase"></i>
+                        Jabatan/Role
+                    </label>
+                    <div class="edit-select-wrapper">
+                        <select id="role" name="role" class="edit-form-control select" required>
+                            <option value="">-- Pilih Jabatan --</option>
+                            <optgroup label="Level 0 - Pembimbing">
+                                <option value="Wali Kelas" {% if item.role == 'Wali Kelas' %}selected{% endif %}>Wali Kelas</option>
+                            </optgroup>
+                            <optgroup label="Level 1 - Pimpinan Kelas">
+                                <option value="Ketua Kelas" {% if item.role == 'Ketua Kelas' %}selected{% endif %}>Ketua Kelas</option>
+                                <option value="Wakil Ketua Kelas" {% if item.role == 'Wakil Ketua Kelas' %}selected{% endif %}>Wakil Ketua Kelas</option>
+                            </optgroup>
+                            <optgroup label="Level 2 - Administrasi">
+                                <option value="Bendahara 1" {% if item.role == 'Bendahara 1' %}selected{% endif %}>Bendahara 1</option>
+                                <option value="Bendahara 2" {% if item.role == 'Bendahara 2' %}selected{% endif %}>Bendahara 2</option>
+                                <option value="Sekretaris 1" {% if item.role == 'Sekretaris 1' %}selected{% endif %}>Sekretaris 1</option>
+                                <option value="Sekretaris 2" {% if item.role == 'Sekretaris 2' %}selected{% endif %}>Sekretaris 2</option>
+                            </optgroup>
+                            <optgroup label="Level 3 - Seksi-Seksi">
+                                <option value="Seksi Kebersihan" {% if item.role == 'Seksi Kebersihan' %}selected{% endif %}>Seksi Kebersihan</option>
+                                <option value="Seksi Keamanan" {% if item.role == 'Seksi Keamanan' %}selected{% endif %}>Seksi Keamanan</option>
+                                <option value="Seksi Olahraga" {% if item.role == 'Seksi Olahraga' %}selected{% endif %}>Seksi Olahraga</option>
+                                <option value="Seksi Keagamaan" {% if item.role == 'Seksi Keagamaan' %}selected{% endif %}>Seksi Keagamaan</option>
+                                <option value="Seksi Kesenian" {% if item.role == 'Seksi Kesenian' %}selected{% endif %}>Seksi Kesenian</option>
+                                <option value="Seksi Humas" {% if item.role == 'Seksi Humas' %}selected{% endif %}>Seksi Humas</option>
+                                <option value="Seksi Dokumentasi" {% if item.role == 'Seksi Dokumentasi' %}selected{% endif %}>Seksi Dokumentasi</option>
+                                <option value="Seksi Perlengkapan" {% if item.role == 'Seksi Perlengkapan' %}selected{% endif %}>Seksi Perlengkapan</option>
+                            </optgroup>
+                            <optgroup label="Lainnya">
+                                <option value="Custom" {% if item.role not in ['Wali Kelas', 'Ketua Kelas', 'Wakil Ketua Kelas', 'Bendahara 1', 'Bendahara 2', 'Sekretaris 1', 'Sekretaris 2', 'Seksi Kebersihan', 'Seksi Keamanan', 'Seksi Olahraga', 'Seksi Keagamaan', 'Seksi Kesenian', 'Seksi Humas', 'Seksi Dokumentasi', 'Seksi Perlengkapan'] %}selected{% endif %}>Custom (Tulis Manual)</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                    <input type="text" id="role-custom" name="role_custom" class="edit-form-control" 
+                           value="{% if item.role not in ['Wali Kelas', 'Ketua Kelas', 'Wakil Ketua Kelas', 'Bendahara 1', 'Bendahara 2', 'Sekretaris 1', 'Sekretaris 2', 'Seksi Kebersihan', 'Seksi Keamanan', 'Seksi Olahraga', 'Seksi Keagamaan', 'Seksi Kesenian', 'Seksi Humas', 'Seksi Dokumentasi', 'Seksi Perlengkapan'] %}{{ item.role }}{% endif %}"
+                           placeholder="Tulis jabatan custom..." 
+                           style="{% if item.role not in ['Wali Kelas', 'Ketua Kelas', 'Wakil Ketua Kelas', 'Bendahara 1', 'Bendahara 2', 'Sekretaris 1', 'Sekretaris 2', 'Seksi Kebersihan', 'Seksi Keamanan', 'Seksi Olahraga', 'Seksi Keagamaan', 'Seksi Kesenian', 'Seksi Humas', 'Seksi Dokumentasi', 'Seksi Perlengkapan'] %}display: block;{% else %}display: none;{% endif %} margin-top: 0.5rem;">
+                </div>
+            </div>
+            
+            <div class="edit-form-group">
+                <label for="parent_id" class="edit-form-label">
+                    <i class="fas fa-sitemap"></i>
+                    Atasan
+                </label>
+                <div class="edit-select-wrapper">
+                    <select id="parent_id" name="parent_id" class="edit-form-control select">
+                        <option value="">-- Pilih Atasan --</option>
+                        {% if all_struktur %}
+                            {% for struk in all_struktur %}
+                                <option value="{{ struk['id'] }}" {% if item.parent_id == struk['id'] %}selected{% endif %}>
+                                    {{ struk['nama'] }} ({{ struk['role'] }})
+                                </option>
+                            {% endfor %}
+                        {% endif %}
+                    </select>
+                </div>
+                <small class="edit-form-text">
+                    <strong>Panduan:</strong> Wali Kelas tidak memerlukan atasan. Untuk jabatan lain, pilih atasan sesuai struktur organisasi.
+                </small>
+            </div>
+            
+            <div class="edit-form-group">
+                <label class="edit-form-label">
+                    <i class="fas fa-camera"></i>
+                    Foto Profil
+                </label>
+                {% if item.foto %}
+                <div class="edit-image-container">
+                    <div>
+                        <img src="{{ url_for('static', filename='img/uploads/' + item.foto) }}" 
+                             alt="Current photo" class="edit-current-image">
+                        <div class="edit-form-text">Foto saat ini</div>
+                    </div>
+                </div>
+                {% endif %}
+                <div class="edit-file-input">
+                    <input type="file" id="foto" name="foto" class="edit-form-control" accept="image/*">
+                    <label for="foto" class="edit-file-label">
+                        <i class="fas fa-upload"></i>
+                        <span>Pilih File Baru (Opsional)</span>
+                    </label>
+                </div>
+                <small class="edit-form-text">Kosongkan jika tidak ingin mengubah foto. Format: JPG, PNG, GIF, WEBP. Maksimal 2MB.</small>
+                <img id="foto-preview" class="edit-image-preview" alt="Preview">
+            </div>
+
+            {% elif type == 'jadwal' %}
+            <!-- FORM EDIT JADWAL -->
+            <div class="edit-form-grid">
+                <div class="edit-form-group">
+                    <label for="hari" class="edit-form-label">
+                        <i class="fas fa-calendar"></i>
+                        Hari
+                    </label>
+                    <div class="edit-select-wrapper">
+                        <select id="hari" name="hari" class="edit-form-control select" required>
+                            <option value="">Pilih Hari</option>
+                            <option value="Senin" {% if item.hari == 'Senin' %}selected{% endif %}>Senin</option>
+                            <option value="Selasa" {% if item.hari == 'Selasa' %}selected{% endif %}>Selasa</option>
+                            <option value="Rabu" {% if item.hari == 'Rabu' %}selected{% endif %}>Rabu</option>
+                            <option value="Kamis" {% if item.hari == 'Kamis' %}selected{% endif %}>Kamis</option>
+                            <option value="Jumat" {% if item.hari == 'Jumat' %}selected{% endif %}>Jumat</option>
+                            <option value="Sabtu" {% if item.hari == 'Sabtu' %}selected{% endif %}>Sabtu</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="edit-form-group">
+                    <label for="mata_pelajaran" class="edit-form-label">
+                        <i class="fas fa-book"></i>
+                        Mata Pelajaran
+                    </label>
+                    <input type="text" id="mata_pelajaran" name="mata_pelajaran" class="edit-form-control" 
+                           value="{{ item.mata_pelajaran }}" required>
+                </div>
+            </div>
+            
+            <div class="edit-form-grid">
+                <div class="edit-form-group">
+                    <label for="jam_mulai" class="edit-form-label">
+                        <i class="fas fa-clock"></i>
+                        Jam Mulai
+                    </label>
+                    <input type="time" id="jam_mulai" name="jam_mulai" class="edit-form-control" 
+                           value="{{ item.jam_mulai }}" required>
+                </div>
+                
+                <div class="edit-form-group">
+                    <label for="jam_selesai" class="edit-form-label">
+                        <i class="fas fa-clock"></i>
+                        Jam Selesai
+                    </label>
+                    <input type="time" id="jam_selesai" name="jam_selesai" class="edit-form-control" 
+                           value="{{ item.jam_selesai }}" required>
+                </div>
+            </div>
+            
+            <div class="edit-form-group">
+                <label for="guru" class="edit-form-label">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                    Guru Pengajar
+                </label>
+                <input type="text" id="guru" name="guru" class="edit-form-control" 
+                       value="{{ item.guru }}" required>
+            </div>
+
+            {% elif type == 'piket' %}
+            <!-- FORM EDIT PIKET -->
+            <div class="edit-form-grid">
+                <div class="edit-form-group">
+                    <label for="hari_piket" class="edit-form-label">
+                        <i class="fas fa-calendar"></i>
+                        Hari
+                    </label>
+                    <div class="edit-select-wrapper">
+                        <select id="hari_piket" name="hari" class="edit-form-control select" required>
+                            <option value="">Pilih Hari</option>
+                            <option value="Senin" {% if item.hari == 'Senin' %}selected{% endif %}>Senin</option>
+                            <option value="Selasa" {% if item.hari == 'Selasa' %}selected{% endif %}>Selasa</option>
+                            <option value="Rabu" {% if item.hari == 'Rabu' %}selected{% endif %}>Rabu</option>
+                            <option value="Kamis" {% if item.hari == 'Kamis' %}selected{% endif %}>Kamis</option>
+                            <option value="Jumat" {% if item.hari == 'Jumat' %}selected{% endif %}>Jumat</option>
+                            <option value="Sabtu" {% if item.hari == 'Sabtu' %}selected{% endif %}>Sabtu</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="edit-form-group">
+                    <label for="nama_siswa" class="edit-form-label">
+                        <i class="fas fa-user"></i>
+                        Nama Siswa
+                    </label>
+                    <input type="text" id="nama_siswa" name="nama_siswa" class="edit-form-control" 
+                           value="{{ item.nama_siswa }}" required>
+                </div>
+            </div>
+            
+            <div class="edit-form-group">
+                <label for="tugas" class="edit-form-label">
+                    <i class="fas fa-tasks"></i>
+                    Tugas Piket (Opsional)
+                </label>
+                <input type="text" id="tugas" name="tugas" class="edit-form-control" 
+                       value="{{ item.tugas or '' }}"
+                       placeholder="Contoh: Menyapu kelas, Membersihkan papan tulis">
+            </div>
+
+            {% elif type == 'siswa' %}
+            <!-- FORM EDIT SISWA -->
+            <div class="edit-form-grid">
+                <div class="edit-form-group">
+                    <label for="nama_siswa" class="edit-form-label">
+                        <i class="fas fa-user"></i>
+                        Nama Lengkap
+                    </label>
+                    <input type="text" id="nama_siswa" name="nama" class="edit-form-control" 
+                           value="{{ item.nama }}" required>
+                </div>
+                
+                <div class="edit-form-group">
+                    <label for="absen" class="edit-form-label">
+                        <i class="fas fa-hashtag"></i>
+                        Nomor Absen
+                    </label>
+                    <input type="number" id="absen" name="absen" class="edit-form-control" 
+                           value="{{ item.absen }}" min="1" required>
+                </div>
+            </div>
+            
+            <div class="edit-form-group">
+                <label for="bio_siswa" class="edit-form-label">
+                    <i class="fas fa-info-circle"></i>
+                    Bio/Catatan (Opsional)
+                </label>
+                <textarea id="bio_siswa" name="bio" class="edit-form-control" 
+                          placeholder="Deskripsi singkat tentang siswa..."
+                          rows="4">{{ item.bio or '' }}</textarea>
+            </div>
+            
+            <div class="edit-form-group">
+                <label class="edit-form-label">
+                    <i class="fas fa-camera"></i>
+                    Foto Profil
+                </label>
+                {% if item.foto %}
+                <div class="edit-image-container">
+                    <div>
+                        <img src="{{ url_for('static', filename='img/uploads/siswa/' + item.foto) }}" 
+                             alt="Current photo" class="edit-current-image">
+                        <div class="edit-form-text">Foto saat ini</div>
+                    </div>
+                </div>
+                {% endif %}
+                <div class="edit-file-input">
+                    <input type="file" id="foto_siswa" name="foto" class="edit-form-control" accept="image/*">
+                    <label for="foto_siswa" class="edit-file-label">
+                        <i class="fas fa-upload"></i>
+                        <span>Pilih File Baru (Opsional)</span>
+                    </label>
+                </div>
+                <small class="edit-form-text">Kosongkan jika tidak ingin mengubah foto. Format: JPG, PNG, GIF, WEBP. Maksimal 2MB.</small>
+                <img id="siswa-preview" class="edit-image-preview" alt="Preview">
+            </div>
+            {% endif %}
+            
+            <div class="edit-actions">
+                <button type="submit" class="edit-btn edit-btn-primary">
+                    <i class="fas fa-save"></i>
+                    Update Data
+                </button>
+                <a href="{{ url_for('admin_' + type) }}?tab={{ type }}" class="edit-btn edit-btn-secondary">
+                    <i class="fas fa-arrow-left"></i>
+                    Kembali
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Custom role handler untuk struktur
+    const roleSelect = document.getElementById('role');
+    const roleCustomInput = document.getElementById('role-custom');
+
+    if (roleSelect && roleCustomInput) {
+        roleSelect.addEventListener('change', function() {
+            if (this.value === 'Custom') {
+                roleCustomInput.style.display = 'block';
+                roleCustomInput.required = true;
+                roleCustomInput.focus();
+            } else {
+                roleCustomInput.style.display = 'none';
+                roleCustomInput.required = false;
+                roleCustomInput.value = '';
+            }
+        });
+    }
+
+    // Image preview functionality
+    function setupImagePreview(inputId, previewId) {
+        const input = document.getElementById(inputId);
+        const preview = document.getElementById(previewId);
+        
+        if (input && preview) {
+            input.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        preview.src = e.target.result;
+                        preview.classList.add('active');
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    preview.classList.remove('active');
+                }
+            });
+        }
+    }
+
+    // Setup image previews
+    setupImagePreview('foto', 'foto-preview');
+    setupImagePreview('foto_siswa', 'siswa-preview');
+
+    // Auto-focus first input field
+    const firstInput = document.querySelector('input:not([type="file"]), select, textarea');
+    if (firstInput) {
+        setTimeout(() => {
+            firstInput.focus();
+        }, 300);
+    }
+
+    // Form submission loading state
+    const form = document.querySelector('.edit-form');
+    const submitBtn = form.querySelector('button[type="submit"]');
+    
+    form.addEventListener('submit', function() {
+        submitBtn.classList.add('loading');
+        submitBtn.disabled = true;
+    });
+});
+</script>
+{% endblock %}

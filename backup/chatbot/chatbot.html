@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}Calavera AI - Asisten Pintar Kelas{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/chatbot.css') }}">
+
+<div class="chatbot-container">
+    <!-- Header Info (hanya muncul saat empty state) -->
+    <div class="chatbot-empty-state" id="emptyState">
+        <div class="empty-state-content">
+            <div class="ai-icon-wrapper">
+                <div class="ai-icon-bg"></div>
+                <i class="fas fa-robot ai-icon"></i>
+            </div>
+            <h1 class="empty-title">Calavera AI</h1>
+            <p class="empty-subtitle">Asisten pintar untuk membantu kebutuhan kelas kamu</p>
+            
+            <div class="suggestion-chips">
+                <button class="chip" data-prompt="Jelaskan tentang struktur kelas">
+                    <i class="fas fa-sitemap"></i>
+                    Struktur Kelas
+                </button>
+                <button class="chip" data-prompt="Kapan jadwal piket hari ini?">
+                    <i class="fas fa-calendar"></i>
+                    Jadwal Piket
+                </button>
+                <button class="chip" data-prompt="Bantu saya memahami materi matematika">
+                    <i class="fas fa-book"></i>
+                    Bantuan Belajar
+                </button>
+                <button class="chip" data-prompt="Tips belajar efektif">
+                    <i class="fas fa-lightbulb"></i>
+                    Tips Belajar
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Chat Messages Area -->
+    <div class="chatbot-messages" id="chatMessages">
+        <!-- Messages will be appended here dynamically -->
+    </div>
+    
+    <!-- Input Area -->
+    <div class="chatbot-input-wrapper">
+        <div class="chatbot-input-container">
+            <!-- Personality Settings -->
+            <div class="personality-settings" id="personalitySettings">
+                <button class="settings-toggle" id="settingsToggle" title="Pengaturan Kepribadian">
+                    <i class="fas fa-sliders-h"></i>
+                </button>
+                <div class="settings-dropdown" id="settingsDropdown">
+                    <label class="settings-label">Kepribadian Bot:</label>
+                    <select class="personality-select" id="personalitySelect">
+                        <option value="">Default (Ramah & Membantu)</option>
+                        <option value="Bicara dengan gaya santai seperti teman sebaya, gunakan bahasa gaul tapi tetap sopan">Teman Santai</option>
+                        <option value="Bicara formal dan profesional seperti guru pembimbing yang berpengalaman">Guru Pembimbing</option>
+                        <option value="Bicara dengan antusias dan humoris, sering gunakan emoji dan candaan ringan">Humoris & Ceria</option>
+                        <option value="Bicara singkat, padat, dan to the point tanpa basa-basi">Singkat & Jelas</option>
+                        <option value="custom">Custom...</option>
+                    </select>
+                    <textarea class="custom-personality" id="customPersonality" placeholder="Tuliskan gaya bicara yang kamu inginkan..." style="display: none;"></textarea>
+                </div>
+            </div>
+            
+            <div class="input-row">
+                <!-- Image Upload Button -->
+                <button class="input-btn upload-btn" id="uploadBtn" title="Upload Gambar">
+                    <i class="fas fa-paperclip"></i>
+                    <input type="file" id="imageInput" accept="image/*" style="display: none;">
+                </button>
+                
+                <!-- Textarea for message -->
+                <textarea 
+                    class="chat-input" 
+                    id="chatInput" 
+                    placeholder="Ketik pesan kamu di sini..."
+                    rows="1"></textarea>
+                
+                <!-- Search Toggle Button -->
+                <button class="input-btn search-btn" id="searchBtn" title="Cari di Internet">
+                    <i class="fas fa-globe"></i>
+                </button>
+                
+                <!-- Send Button -->
+                <button class="input-btn send-btn" id="sendBtn" title="Kirim Pesan">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+            
+            <!-- Image Preview -->
+            <div class="image-preview-container" id="imagePreview" style="display: none;">
+                <img id="previewImage" alt="Preview">
+                <button class="remove-image" id="removeImage">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/chatbot.js') }}"></script>
+{% endblock %}

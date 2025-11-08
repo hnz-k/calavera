@@ -1,0 +1,916 @@
+{% extends "base.html" %}
+
+{% block title %}Daftar Siswa - Calavera{% endblock %}
+
+{% block content %}
+<style>
+.siswa-hero {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+    border-radius: var(--radius);
+    padding: 3rem 2rem;
+    margin-bottom: 3rem;
+    text-align: center;
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+}
+
+.siswa-hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url("{{ url_for('static', filename='img/hero-pattern/skulls.svg') }}");
+    background-repeat: repeat;
+    background-size: 50px 50px;
+    opacity: 0.15;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.siswa-hero-content {
+    position: relative;
+    z-index: 2;
+}
+
+.page-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.5rem;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    color: white;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: var(--transition);
+}
+
+.page-badge:hover {
+    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.25);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+.page-title {
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 700;
+    color: white;
+    margin-bottom: 1rem;
+    letter-spacing: -0.02em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.page-title i {
+    color: white;
+    font-size: 2.5rem;
+    animation: bounce 2s infinite;
+}
+
+.page-description {
+    font-size: 1.125rem;
+    color: rgba(255, 255, 255, 0.95);
+    max-width: 650px;
+    margin: 0 auto;
+    line-height: 1.7;
+}
+
+/* ========================================
+   SEARCH SECTION
+   ======================================== */
+.search-section {
+    max-width: 700px;
+    margin: 0 auto 3rem;
+    padding: 0 1rem;
+}
+
+.search-container {
+    position: relative;
+    width: 100%;
+}
+
+.search-bar {
+    width: 100%;
+    padding: 1.125rem 1.75rem 1.125rem 3.5rem;
+    background: var(--surface);
+    border: 2px solid var(--bg);
+    border-radius: 9999px;
+    font-size: 1rem;
+    color: var(--text);
+    transition: var(--transition);
+    box-shadow: var(--shadow);
+}
+
+.search-bar::placeholder {
+    color: var(--muted);
+}
+
+.search-bar:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(30, 58, 138, 0.1), var(--shadow);
+    transform: translateY(-2px);
+}
+
+[data-theme="dark"] .search-bar:focus {
+    box-shadow: 0 0 0 4px rgba(91, 124, 224, 0.2), var(--shadow);
+}
+
+.search-icon {
+    position: absolute;
+    left: 1.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    font-size: 1.25rem;
+    pointer-events: none;
+}
+
+/* ========================================
+   FILTER SECTION
+   ======================================== */
+.filter-section {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 2.5rem;
+    padding: 0 1rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    scroll-behavior: smooth;
+}
+
+.filter-section::-webkit-scrollbar {
+    display: none;
+}
+
+.filter-btn {
+    padding: 0.75rem 1.75rem;
+    background: var(--surface);
+    border: 2px solid var(--bg);
+    border-radius: 9999px;
+    color: var(--text);
+    font-weight: 600;
+    font-size: 0.9375rem;
+    cursor: pointer;
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.625rem;
+    white-space: nowrap;
+    box-shadow: var(--shadow);
+    min-height: 42px;
+}
+
+.filter-btn i {
+    font-size: 1.125rem;
+}
+
+.filter-btn:hover {
+    border-color: var(--primary);
+    box-shadow: 0 8px 24px rgba(30,58,138,0.12);
+}
+
+[data-theme="dark"] .filter-btn:hover {
+    box-shadow: 0 8px 24px rgba(91,124,224,0.25);
+}
+
+.filter-btn.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+    box-shadow: 0 8px 24px rgba(30,58,138,0.25);
+}
+
+[data-theme="dark"] .filter-btn.active {
+    box-shadow: 0 8px 24px rgba(91,124,224,0.4);
+}
+
+/* ========================================
+   SEARCH INFO
+   ======================================== */
+.search-info {
+    text-align: center;
+    margin-bottom: 2.5rem;
+    color: var(--muted);
+    font-size: 1rem;
+    font-weight: 500;
+    animation: fadeIn 0.4s ease-out;
+}
+
+/* ========================================
+   SISWA CONTAINER & GRID
+   ======================================== */
+.siswa-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 2rem;
+}
+
+.siswa-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+
+/* ========================================
+   SISWA CARD - PREMIUM DESIGN
+   ======================================== */
+.siswa-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 2rem 1.5rem;
+    box-shadow: var(--shadow);
+    border: 2px solid transparent;
+    transition: var(--transition);
+    text-align: center;
+    position: relative;
+    animation: fadeInUp 0.6s ease-out backwards;
+}
+
+.siswa-card:hover {
+    transform: translateY(-8px);
+    border-color: var(--primary);
+    box-shadow: 0 16px 48px rgba(15,23,42,0.15);
+}
+
+[data-theme="dark"] .siswa-card:hover {
+    box-shadow: 0 16px 48px rgba(2,6,23,0.9);
+}
+
+/* ========================================
+   PHOTO CONTAINER
+   ======================================== */
+.siswa-photo-container {
+    margin-bottom: 1.5rem;
+    position: relative;
+}
+
+.siswa-photo {
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid var(--primary);
+    box-shadow: 0 8px 24px rgba(30,58,138,0.2);
+    margin: 0 auto;
+    transition: var(--transition);
+    display: block;
+}
+
+.siswa-card:hover .siswa-photo {
+    transform: scale(1.08);
+    border-color: var(--accent);
+    box-shadow: 0 12px 36px rgba(109,40,217,0.3);
+}
+
+[data-theme="dark"] .siswa-photo {
+    box-shadow: 0 8px 24px rgba(91,124,224,0.35);
+}
+
+[data-theme="dark"] .siswa-card:hover .siswa-photo {
+    box-shadow: 0 12px 36px rgba(138,99,255,0.45);
+}
+
+.photo-placeholder {
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 2.5rem;
+    margin: 0 auto;
+    border: 4px solid var(--primary);
+    box-shadow: 0 8px 24px rgba(30,58,138,0.2);
+    transition: var(--transition);
+}
+
+.siswa-card:hover .photo-placeholder {
+    transform: scale(1.08);
+    box-shadow: 0 12px 36px rgba(109,40,217,0.3);
+}
+
+/* ========================================
+   SISWA INFO
+   ======================================== */
+.siswa-info h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 0.625rem;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+}
+
+.absen {
+    font-size: 1rem;
+    color: var(--primary);
+    font-weight: 600;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.absen::before {
+    content: '';
+    color: var(--muted);
+    font-weight: 700;
+}
+
+.bio {
+    font-size: 0.9375rem;
+    color: var(--muted);
+    line-height: 1.6;
+    margin: 0;
+    font-style: italic;
+    max-height: 200px;
+    opacity: 1;
+    overflow: hidden;
+    transition: var(--transition);
+}
+
+/* ========================================
+   EMPTY STATE
+   ======================================== */
+.empty-state {
+    text-align: center;
+    padding: 5rem 2rem;
+    grid-column: 1 / -1;
+    animation: fadeInScale 0.6s ease-out;
+}
+
+.empty-state-icon {
+    width: 100px;
+    height: 100px;
+    background: var(--bg);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 2rem;
+    box-shadow: var(--shadow);
+}
+
+.empty-state-icon i {
+    font-size: 3rem;
+    color: var(--muted);
+    opacity: 0.7;
+}
+
+.empty-state h3 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 1rem;
+}
+
+.empty-state p {
+    color: var(--muted);
+    font-size: 1.125rem;
+    max-width: 500px;
+    margin: 0 auto 2rem;
+    line-height: 1.6;
+}
+
+.add-siswa-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 2rem;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    color: white;
+    border: none;
+    border-radius: var(--radius);
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: var(--transition);
+    text-decoration: none;
+    box-shadow: 0 6px 20px rgba(30,58,138,0.3);
+    min-height: 44px;
+}
+
+.add-siswa-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 32px rgba(30,58,138,0.4);
+}
+
+/* ========================================
+   ANIMATIONS
+   ======================================== */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(40px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-8px);
+    }
+}
+
+/* Stagger animation delays */
+.siswa-card:nth-child(1) { animation-delay: 0.05s; }
+.siswa-card:nth-child(2) { animation-delay: 0.1s; }
+.siswa-card:nth-child(3) { animation-delay: 0.15s; }
+.siswa-card:nth-child(4) { animation-delay: 0.2s; }
+.siswa-card:nth-child(5) { animation-delay: 0.25s; }
+.siswa-card:nth-child(6) { animation-delay: 0.3s; }
+.siswa-card:nth-child(7) { animation-delay: 0.35s; }
+.siswa-card:nth-child(8) { animation-delay: 0.4s; }
+
+/* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
+
+/* Large Desktop */
+@media (min-width: 1440px) {
+    .siswa-grid {
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    }
+}
+
+/* Desktop / Tablet Landscape */
+@media (min-width: 1024px) {
+    .siswa-container {
+        padding: 0 2.5rem;
+    }
+    
+    .siswa-grid {
+        gap: 2.5rem;
+    }
+}
+
+/* Tablet */
+@media (max-width: 1023px) {
+    .siswa-container {
+        padding: 0 1.5rem;
+    }
+    
+    .siswa-grid {
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.75rem;
+    }
+    
+    .siswa-photo,
+    .photo-placeholder {
+        width: 120px;
+        height: 120px;
+    }
+}
+
+/* Mobile */
+@media (max-width: 767px) {
+    .siswa-hero {
+        padding: 2rem 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .page-title {
+        flex-direction: column;
+        gap: 0.75rem;
+        font-size: 2rem;
+    }
+    
+    .page-title i {
+        font-size: 2rem;
+    }
+    
+    .page-description {
+        font-size: 1rem;
+    }
+    
+    .search-section {
+        margin-bottom: 2.5rem;
+    }
+    
+    .search-bar {
+        padding: 1rem 1.5rem 1rem 3rem;
+        font-size: 0.9375rem;
+    }
+    
+    .search-icon {
+        left: 1.25rem;
+        font-size: 1.125rem;
+    }
+    
+    .filter-section {
+        justify-content: flex-start;
+        padding: 0 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .filter-btn {
+        padding: 0.625rem 1.5rem;
+        font-size: 0.875rem;
+    }
+    
+    .siswa-container {
+        padding: 0 1rem;
+    }
+    
+    .siswa-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .siswa-card {
+        padding: 1.75rem 1.25rem;
+    }
+    
+    .siswa-photo,
+    .photo-placeholder {
+        width: 110px;
+        height: 110px;
+    }
+    
+    .siswa-info h3 {
+        font-size: 1.375rem;
+    }
+    
+    .card-actions {
+        opacity: 1;
+        top: 0.75rem;
+        right: 0.75rem;
+    }
+    
+    .edit-btn, .delete-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 0.9rem;
+    }
+    
+    .empty-state {
+        padding: 4rem 1.5rem;
+    }
+    
+    .empty-state-icon {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .empty-state-icon i {
+        font-size: 2.5rem;
+    }
+    
+    .empty-state h3 {
+        font-size: 1.5rem;
+    }
+    
+    .empty-state p {
+        font-size: 1rem;
+    }
+}
+
+/* Small Mobile */
+@media (max-width: 480px) {
+    .siswa-hero {
+        padding: 1.5rem 1rem;
+    }
+    
+    .page-badge {
+        font-size: 0.8125rem;
+        padding: 0.5rem 1.25rem;
+    }
+    
+    .page-title {
+        font-size: 1.75rem;
+    }
+    
+    .page-title i {
+        font-size: 1.75rem;
+    }
+    
+    .search-bar {
+        padding: 0.875rem 1.25rem 0.875rem 2.75rem;
+    }
+    
+    .search-icon {
+        left: 1rem;
+    }
+    
+    .filter-btn {
+        padding: 0.5rem 1.25rem;
+        font-size: 0.8125rem;
+        gap: 0.5rem;
+    }
+    
+    .filter-btn i {
+        font-size: 1rem;
+    }
+    
+    .siswa-card {
+        padding: 1.5rem 1rem;
+    }
+    
+    .siswa-photo,
+    .photo-placeholder {
+        width: 100px;
+        height: 100px;
+    }
+    
+    .siswa-info h3 {
+        font-size: 1.25rem;
+    }
+    
+    .absen {
+        font-size: 0.9375rem;
+    }
+    
+    .bio {
+        font-size: 0.875rem;
+    }
+}
+
+/* ========================================
+   PRINT STYLES
+   ======================================== */
+@media print {
+    .search-section,
+    .filter-section,
+    .card-actions {
+        display: none !important;
+    }
+    
+    .page-header {
+        margin-bottom: 2rem;
+    }
+    
+    .siswa-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+    }
+    
+    .siswa-card {
+        box-shadow: none;
+        border: 1px solid #ddd;
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+    
+    .siswa-card:hover {
+        transform: none;
+    }
+    
+    .bio {
+        max-height: none;
+        opacity: 1;
+    }
+}
+</style>
+
+<div class="siswa-container">
+    <!-- Hero Section -->
+    <div class="siswa-hero">
+        <div class="siswa-hero-content">
+            <div class="page-badge">
+                <i class="fas fa-users"></i>
+                <span>Kelas XII-3</span>
+            </div>
+            <h1 class="page-title">
+                <i class="fas fa-user-graduate"></i>
+                Daftar Siswa Calavera
+            </h1>
+            <p class="page-description">
+                Kenali anggota keluarga besar kelas Calavera - komunitas belajar yang penuh semangat dan prestasi
+            </p>
+        </div>
+    </div>
+
+    <!-- Search Section -->
+    <div class="search-section">
+        <div class="search-container">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" 
+                   class="search-bar" 
+                   id="searchInput" 
+                   placeholder="Cari nama siswa..."
+                   aria-label="Cari siswa">
+        </div>
+    </div>
+
+    <!-- Filter Controls -->
+    <div class="filter-section">
+        <button class="filter-btn active" data-filter="all">
+            <i class="fas fa-users"></i>
+            Semua Siswa
+        </button>
+        <button class="filter-btn" data-filter="genap">
+            <i class="fas fa-sort-numeric-up"></i>
+            Absen Genap
+        </button>
+        <button class="filter-btn" data-filter="ganjil">
+            <i class="fas fa-sort-numeric-down"></i>
+            Absen Ganjil
+        </button>
+    </div>
+
+    <!-- Search Results Info -->
+    <div class="search-info" id="searchInfo">
+        Menampilkan semua siswa
+    </div>
+
+    <!-- Siswa Grid -->
+    <div class="siswa-grid" id="siswaGrid">
+        {% if siswa_data %}
+            {% for siswa in siswa_data %}
+            <div class="siswa-card" 
+                 data-name="{{ siswa.nama|lower }}" 
+                 data-absen="{{ siswa.absen }}"
+                 data-filter="{% if siswa.absen % 2 == 0 %}genap{% else %}ganjil{% endif %}">
+                
+                <!-- Photo -->
+                <div class="siswa-photo-container">
+                    {% if siswa.foto %}
+                    <img src="{{ url_for('static', filename='img/uploads/siswa/' + siswa.foto) }}" 
+                         alt="{{ siswa.nama }}" 
+                         class="siswa-photo"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    {% endif %}
+                    <div class="photo-placeholder" {% if siswa.foto %}style="display: none;"{% endif %}>
+                        <i class="fas fa-user"></i>
+                    </div>
+                </div>
+
+                <!-- Info -->
+                <div class="siswa-info">
+                    <h3>{{ siswa.nama }}</h3>
+                    <p class="absen">No. Absen: {{ siswa.absen }}</p>
+                    {% if siswa.bio %}
+                    <p class="bio">{{ siswa.bio }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <!-- Empty State -->
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <i class="fas fa-user-graduate"></i>
+                </div>
+                <h3>Belum Ada Data Siswa</h3>
+                <p>Data siswa akan ditampilkan di sini setelah ditambahkan oleh admin.</p>
+                {% if session.admin_logged_in %}
+                <button class="add-siswa-btn" onclick="window.location.href='{{ url_for('admin_siswa') }}'">
+                    <i class="fas fa-user-plus"></i>
+                    Tambah Siswa Pertama
+                </button>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const siswaCards = document.querySelectorAll('.siswa-card');
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    const searchInfo = document.getElementById('searchInfo');
+    
+    let currentFilter = 'all';
+    let currentSearchTerm = '';
+
+    // Function to apply both search and filter
+    function applyFilters() {
+        let visibleCount = 0;
+        
+        siswaCards.forEach(card => {
+            const name = card.getAttribute('data-name');
+            const absen = parseInt(card.getAttribute('data-absen'));
+            
+            // Check search match
+            const searchMatch = currentSearchTerm === '' || name.includes(currentSearchTerm);
+            
+            // Check filter match
+            let filterMatch = true;
+            if (currentFilter === 'genap') {
+                filterMatch = absen % 2 === 0;
+            } else if (currentFilter === 'ganjil') {
+                filterMatch = absen % 2 === 1;
+            }
+            
+            // Show/hide card based on both conditions
+            if (searchMatch && filterMatch) {
+                card.style.display = 'block';
+                visibleCount++;
+                // Re-trigger animation
+                card.style.animation = 'none';
+                setTimeout(() => {
+                    card.style.animation = 'fadeInUp 0.6s ease-out';
+                }, 10);
+            } else {
+                card.style.display = 'none';
+            }
+        });
+        
+        updateInfoText(visibleCount);
+    }
+
+    // Function to update search info text
+    function updateInfoText(visibleCount) {
+        let filterText = '';
+        switch(currentFilter) {
+            case 'all': filterText = 'semua siswa'; break;
+            case 'genap': filterText = 'siswa absen genap'; break;
+            case 'ganjil': filterText = 'siswa absen ganjil'; break;
+        }
+        
+        if (currentSearchTerm === '') {
+            searchInfo.textContent = `Menampilkan ${filterText} (${visibleCount} siswa)`;
+        } else {
+            searchInfo.textContent = `Ditemukan ${visibleCount} ${filterText} untuk "${currentSearchTerm}"`;
+        }
+    }
+
+    // Search functionality
+    searchInput.addEventListener('input', function() {
+        currentSearchTerm = this.value.toLowerCase().trim();
+        applyFilters();
+    });
+    
+    // Filter functionality
+    filterButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            currentFilter = this.getAttribute('data-filter');
+            
+            // Update active button
+            filterButtons.forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+            
+            applyFilters();
+        });
+    });
+    
+    // Initialize
+    applyFilters();
+});
+
+// Intersection Observer for scroll animations
+const observerOptions = {
+    threshold: 0.1,
+    rootMargin: '0px 0px -50px 0px'
+};
+
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.style.opacity = '1';
+            entry.target.style.transform = 'translateY(0)';
+        }
+    });
+}, observerOptions);
+
+// Observe all siswa cards
+document.querySelectorAll('.siswa-card').forEach(card => {
+    observer.observe(card);
+});
+</script>
+{% endblock %}

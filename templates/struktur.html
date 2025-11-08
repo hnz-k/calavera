@@ -1,0 +1,1560 @@
+{% extends "base.html" %}
+
+{% block title %}Struktur Kelas - Calavera{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="card hero-section">
+    <div class="hero-content">
+        <div class="hero-icon">
+            <i class="fas fa-sitemap"></i>
+        </div>
+        <h1>Struktur Kelas</h1>
+        <p>Berikut adalah struktur organisasi kelas kami.</p>
+    </div>
+</div>
+
+{% if struktur_data %}
+<!-- Organization Chart -->
+<div class="card org-chart-container">
+    <div class="org-chart-title">
+        <h2>STRUKTUR KELAS</h2>
+        <div class="title-underline"></div>
+    </div>
+    <div class="organization-chart">
+        {% set wali_kelas = [] %}
+        {% set ketua_wakil = [] %}
+        {% set bendahara_sekretaris = [] %}
+        {% set seksi_items = [] %}
+        
+        {# Kategorisasi berdasarkan jabatan #}
+        {% for item in struktur_data %}
+            {% if 'Wali' in item['role'] %}
+                {% set _ = wali_kelas.append(item) %}
+            {% elif 'Ketua' in item['role'] or 'Wakil' in item['role'] %}
+                {% set _ = ketua_wakil.append(item) %}
+            {% elif 'Bendahara' in item['role'] or 'Sekretaris' in item['role'] or 'Sekertaris' in item['role'] %}
+                {% set _ = bendahara_sekretaris.append(item) %}
+            {% elif 'Seksi' in item['role'] %}
+                {% set _ = seksi_items.append(item) %}
+            {% endif %}
+        {% endfor %}
+        
+        {# LEVEL 0: WALI KELAS #}
+        {% if wali_kelas %}
+        <div class="org-level level-0">
+            {% for item in wali_kelas %}
+            <div class="org-card-wrapper">
+                <div class="org-card wali-kelas">
+                    <div class="org-card-inner">
+                        {% if item['foto'] %}
+                        <div class="org-avatar-container">
+                            <img src="{{ url_for('static', filename='img/uploads/' + item['foto']) }}" 
+                                 alt="{{ item['nama'] }}" class="org-avatar">
+                            <div class="avatar-ring"></div>
+                        </div>
+                        {% else %}
+                        <div class="org-avatar-container">
+                            <div class="org-avatar default">
+                                <i class="fas fa-chalkboard-teacher"></i>
+                            </div>
+                            <div class="avatar-ring"></div>
+                        </div>
+                        {% endif %}
+                        <h3 class="org-name">{{ item['nama'] }}</h3>
+                        <div class="org-badge primary-badge">{{ item['role'] }}</div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        {# Connector #}
+        <div class="connector-main">
+            <div class="connector-vertical"></div>
+        </div>
+        <div class="t-connector"></div>
+        {% endif %}
+        
+        {# LEVEL 1: KETUA & WAKIL #}
+        {% if ketua_wakil %}
+        <div class="org-level level-1">
+            {% for item in ketua_wakil %}
+            <div class="org-card-wrapper">
+                <div class="org-card ketua-wakil">
+                    <div class="org-card-inner">
+                        {% if item['foto'] %}
+                        <div class="org-avatar-container">
+                            <img src="{{ url_for('static', filename='img/uploads/' + item['foto']) }}" 
+                                 alt="{{ item['nama'] }}" class="org-avatar">
+                            <div class="avatar-ring"></div>
+                        </div>
+                        {% else %}
+                        <div class="org-avatar-container">
+                            <div class="org-avatar default">
+                                <i class="fas fa-user-tie"></i>
+                            </div>
+                            <div class="avatar-ring"></div>
+                        </div>
+                        {% endif %}
+                        <h4 class="org-name">{{ item['nama'] }}</h4>
+                        <div class="org-badge">{{ item['role'] }}</div>
+                        <div class="dots">
+                            {% if 'Ketua' in item['role'] and 'Wakil' not in item['role'] %}
+                            <div class="dot blue"></div>
+                            <div class="dot blue"></div>
+                            <div class="dot blue"></div>
+                            {% else %}
+                            <div class="dot blue"></div>
+                            <div class="dot blue"></div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        {# Connector #}
+        <div class="connector-main">
+            <div class="connector-vertical"></div>
+        </div>
+        <div class="t-connector"></div>
+        {% endif %}
+        
+        {# LEVEL 2: BENDAHARA & SEKRETARIS #}
+        {% if bendahara_sekretaris %}
+        <div class="org-level level-2">
+            {% for item in bendahara_sekretaris %}
+            <div class="org-card-wrapper">
+                <div class="org-card {% if 'Bendahara' in item['role'] %}bendahara{% else %}sekretaris{% endif %}">
+                    <div class="org-card-inner">
+                        {% if item['foto'] %}
+                        <div class="org-avatar-container">
+                            <img src="{{ url_for('static', filename='img/uploads/' + item['foto']) }}" 
+                                 alt="{{ item['nama'] }}" class="org-avatar">
+                            <div class="avatar-ring"></div>
+                        </div>
+                        {% else %}
+                        <div class="org-avatar-container">
+                            <div class="org-avatar default">
+                                {% if 'Bendahara' in item['role'] %}
+                                <i class="fas fa-coins"></i>
+                                {% else %}
+                                <i class="fas fa-pen"></i>
+                                {% endif %}
+                            </div>
+                            <div class="avatar-ring"></div>
+                        </div>
+                        {% endif %}
+                        <h4 class="org-name">{{ item['nama'] }}</h4>
+                        <div class="org-badge">{{ item['role'] }}</div>
+                        <div class="dots">
+                            {% if '1' in item['role'] %}
+                            <div class="dot {% if 'Bendahara' in item['role'] %}green{% else %}pink{% endif %}"></div>
+                            <div class="dot {% if 'Bendahara' in item['role'] %}green{% else %}pink{% endif %}"></div>
+                            <div class="dot {% if 'Bendahara' in item['role'] %}green{% else %}pink{% endif %}"></div>
+                            {% else %}
+                            <div class="dot {% if 'Bendahara' in item['role'] %}green{% else %}pink{% endif %}"></div>
+                            <div class="dot {% if 'Bendahara' in item['role'] %}green{% else %}pink{% endif %}"></div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        {# Connector #}
+        {% if seksi_items %}
+        <div class="connector-main">
+            <div class="connector-vertical"></div>
+        </div>
+        <div class="t-connector"></div>
+        {% endif %}
+        {% endif %}
+        
+        {# LEVEL 3: SEKSI-SEKSI #}
+        {% if seksi_items %}
+        <div class="org-level level-3">
+            <div class="org-row seksi-row">
+                {% for item in seksi_items %}
+                <div class="org-card-wrapper">
+                    <div class="org-card seksi small">
+                        <div class="org-card-inner">
+                            {% if item['foto'] %}
+                            <div class="org-avatar-container">
+                                <img src="{{ url_for('static', filename='img/uploads/' + item['foto']) }}" 
+                                     alt="{{ item['nama'] }}" class="org-avatar">
+                                <div class="avatar-ring"></div>
+                            </div>
+                            {% else %}
+                            <div class="org-avatar-container">
+                                <div class="org-avatar default">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                                <div class="avatar-ring"></div>
+                            </div>
+                            {% endif %}
+                            <h4 class="org-name">{{ item['nama'] }}</h4>
+                            <div class="org-badge">{{ item['role'] }}</div>
+                            <div class="dots">
+                                <div class="dot orange"></div>
+                                <div class="dot orange"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Table Section -->
+<div class="premium-table-wrapper">
+    <div class="table-section-header">
+        <div class="header-left">
+            <h2 class="section-title">
+                <span class="title-icon">
+                    <i class="fas fa-users"></i>
+                </span>
+                Pengurus Kelas
+            </h2>
+            <p class="section-subtitle">Daftar lengkap struktur organisasi kelas</p>
+        </div>
+        <div class="header-right">
+            <div class="table-badge">
+                <i class="fas fa-check-circle"></i>
+                <span>{{ struktur_data|length }} Anggota</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="modern-table-container">
+        <table class="premium-table">
+            <thead class="table-head">
+                <tr>
+                    <th class="th-foto">
+                        <div class="th-inner">
+                            <span>Foto</span>
+                        </div>
+                    </th>
+                    <th class="th-nama">
+                        <div class="th-inner">
+                            <span>Nama</span>
+                        </div>
+                    </th>
+                    <th class="th-jabatan">
+                        <div class="th-inner">
+                            <span>Jabatan</span>
+                        </div>
+                    </th>
+                    <th class="th-atasan">
+                        <div class="th-inner">
+                            <span>Atasan</span>
+                        </div>
+                    </th>
+                </tr>
+            </thead>
+            <tbody class="table-body">
+                {% for item in struktur_data %}
+                <tr class="table-row" data-row-id="{{ loop.index }}">
+                    <td class="td-foto">
+                        <div class="avatar-wrapper">
+                            {% if item['foto'] %}
+                            <img src="{{ url_for('static', filename='img/uploads/' + item['foto']) }}" alt="{{ item['nama'] }}" class="table-avatar">
+                            {% else %}
+                            <div class="table-avatar avatar-placeholder">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td class="td-nama">
+                        <div class="nama-cell">
+                            <span class="nama-primary">{{ item['nama'] }}</span>
+                        </div>
+                    </td>
+                    <td class="td-jabatan">
+                        <div class="jabatan-cell">
+                            <span class="jabatan-badge">{{ item['role'] }}</span>
+                        </div>
+                    </td>
+                    <td class="td-atasan">
+                        <div class="atasan-cell">
+                            {% if item['parent_nama'] %}
+                            <span class="atasan-name">{{ item['parent_nama'] }}</span>
+                            {% else %}
+                            <span class="atasan-empty">—</span>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% else %}
+<!-- Empty State -->
+<div class="card">
+    <div class="empty-state-modern">
+        <div class="empty-icon">
+            <i class="fas fa-sitemap"></i>
+        </div>
+        <h3>Belum Ada Data Struktur</h3>
+        <p>Data struktur kelas belum tersedia. Silakan hubungi admin untuk mengisi data.</p>
+    </div>
+</div>
+{% endif %}
+
+<style>
+/* ===== HERO SECTION ===== */
+.hero-section {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+    color: white;
+    text-align: center;
+    padding: 3rem 2rem;
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url("{{ url_for('static', filename='img/hero-pattern/skulls.svg') }}");
+    background-repeat: repeat;
+    background-size: 50px 50px;
+    opacity: 0.15;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+}
+
+.hero-icon {
+    font-size: 2.8rem;
+    margin-bottom: 0.75rem;
+    opacity: 0.9;
+    animation: float 3s ease-in-out infinite;
+}
+
+.hero-section h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.hero-section p {
+    font-size: 1.1rem;
+    opacity: 0.95;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+/* ===== ORGANIZATION CHART CONTAINER ===== */
+.org-chart-container {
+    background: var(--surface);
+    border-radius: calc(var(--radius) + 6px);
+    box-shadow: var(--shadow);
+    padding: 3rem 2rem;
+    margin: 2rem auto;
+    max-width: 1300px;
+    overflow-x: auto;
+}
+
+.org-chart-title {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.org-chart-title h2 {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--text);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 0.75rem;
+}
+
+.title-underline {
+    width: 150px;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary), var(--accent));
+    margin: 0 auto;
+    border-radius: 2px;
+}
+
+/* ===== ORGANIZATION CHART ===== */
+.organization-chart {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    min-width: fit-content;
+    padding: 1rem 0;
+}
+
+.org-level {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 2rem;
+    flex-wrap: wrap;
+    position: relative;
+    animation: fadeInUp 0.6s ease-out backwards;
+}
+
+.org-level.level-1 {
+    animation-delay: 0.1s;
+}
+
+.org-level.level-2 {
+    animation-delay: 0.3s;
+}
+
+.org-level.level-3 {
+    animation-delay: 0.5s;
+    flex-direction: column;
+    gap: 0;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ===== ORG CARD ===== */
+.org-card-wrapper {
+    position: relative;
+}
+
+.org-card {
+    background: var(--surface);
+    border: 3px solid transparent;
+    border-radius: calc(var(--radius) + 4px);
+    padding: 1.75rem 1.5rem;
+    text-align: center;
+    min-width: 220px;
+    max-width: 260px;
+    transition: all var(--transition);
+    box-shadow: var(--shadow);
+    position: relative;
+    cursor: pointer;
+}
+
+/* Wali Kelas / Top Position */
+.org-card.wali-kelas {
+    background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+    border-color: var(--primary);
+    min-width: 260px;
+    max-width: 280px;
+}
+
+[data-theme="dark"] .org-card.wali-kelas {
+    background: linear-gradient(135deg, rgba(67, 97, 193, 0.2) 0%, rgba(147, 121, 199, 0.15) 100%);
+}
+
+/* Ketua & Wakil */
+.org-card.ketua-wakil {
+    background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+    border-color: #3b82f6;
+}
+
+[data-theme="dark"] .org-card.ketua-wakil {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(59, 130, 246, 0.1) 100%);
+    border-color: #60a5fa;
+}
+
+/* Bendahara */
+.org-card.bendahara {
+    background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+    border-color: #10b981;
+}
+
+[data-theme="dark"] .org-card.bendahara {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(16, 185, 129, 0.1) 100%);
+    border-color: #34d399;
+}
+
+/* Sekretaris */
+.org-card.sekretaris {
+    background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%);
+    border-color: #ec4899;
+}
+
+[data-theme="dark"] .org-card.sekretaris {
+    background: linear-gradient(135deg, rgba(236, 72, 153, 0.15) 0%, rgba(236, 72, 153, 0.1) 100%);
+    border-color: #f472b6;
+}
+
+/* Small Cards */
+.org-card.small {
+    min-width: 200px;
+    max-width: 220px;
+    padding: 1.5rem 1.25rem;
+}
+
+/* Hover Effect */
+.org-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 40px rgba(15,23,42,0.15);
+}
+
+[data-theme="dark"] .org-card:hover {
+    box-shadow: 0 12px 40px rgba(91,124,224,0.3);
+}
+
+/* ===== AVATAR ===== */
+.org-avatar-container {
+    position: relative;
+    display: inline-block;
+    margin-bottom: 1rem;
+}
+
+.org-avatar {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    position: relative;
+    z-index: 2;
+}
+
+.org-card.wali-kelas .org-avatar {
+    width: 110px;
+    height: 110px;
+    border-width: 5px;
+    border-color: var(--primary);
+}
+
+.org-card.ketua-wakil .org-avatar {
+    border-color: #3b82f6;
+}
+
+.org-card.bendahara .org-avatar {
+    border-color: #10b981;
+}
+
+.org-card.sekretaris .org-avatar {
+    border-color: #ec4899;
+}
+
+.org-card.small .org-avatar {
+    width: 75px;
+    height: 75px;
+    border-width: 3px;
+}
+
+/* Default Avatar */
+.org-avatar.default {
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    color: white;
+}
+
+.org-card.small .org-avatar.default {
+    font-size: 2rem;
+}
+
+/* Avatar Ring */
+.avatar-ring {
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    right: -5px;
+    bottom: -5px;
+    border: 2px solid var(--accent);
+    border-radius: 50%;
+    opacity: 0;
+    transform: scale(0.9);
+    transition: all var(--transition);
+}
+
+.org-card:hover .avatar-ring {
+    opacity: 0.4;
+    transform: scale(1.1);
+}
+
+/* ===== TEXT & BADGE ===== */
+.org-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 0.75rem;
+    line-height: 1.3;
+}
+
+.org-card.small .org-name {
+    font-size: 1rem;
+}
+
+.org-badge {
+    display: inline-block;
+    padding: 0.45rem 1.1rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 0.25rem;
+    color: white;
+}
+
+.org-card.wali-kelas .org-badge {
+    background: var(--primary);
+}
+
+.org-card.ketua-wakil .org-badge {
+    background: #3b82f6;
+}
+
+.org-card.bendahara .org-badge {
+    background: #10b981;
+}
+
+.org-card.sekretaris .org-badge {
+    background: #ec4899;
+}
+
+/* Dots */
+.dots {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-top: 0.75rem;
+}
+
+.dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    opacity: 0.7;
+}
+
+.dot.blue { background: #3b82f6; }
+.dot.green { background: #10b981; }
+.dot.pink { background: #ec4899; }
+
+/* ===== CONNECTORS ===== */
+.connector-main {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin: 0;
+}
+
+.connector-vertical {
+    width: 3px;
+    height: 40px;
+    background: var(--muted);
+    opacity: 0.4;
+}
+
+/* T-Connector */
+.t-connector {
+    position: relative;
+    width: 100%;
+    height: 40px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.t-connector::before {
+    content: '';
+    position: absolute;
+    width: 3px;
+    height: 20px;
+    background: var(--muted);
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0.4;
+}
+
+.t-connector::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 3px;
+    background: var(--muted);
+    top: 20px;
+    left: 0;
+    opacity: 0.4;
+}
+
+/* Level 3 Rows */
+.org-row {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-bottom: 0;
+}
+
+.org-level.level-3::before {
+    content: '';
+    position: absolute;
+    height: 3px;
+    background: var(--muted);
+    top: 0;
+    left: 15%;
+    right: 15%;
+    opacity: 0.4;
+}
+
+.org-level.level-3 .org-card-wrapper::before {
+    content: '';
+    position: absolute;
+    width: 3px;
+    height: 40px;
+    background: var(--muted);
+    top: -40px;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0.4;
+}
+
+/* Mobile Connectors */
+.mobile-connector,
+.mobile-t-connector {
+    display: none;
+}
+
+/* ===== TABLE SECTION ===== */
+.premium-table-wrapper {
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    margin: 2rem 0;
+    border: 1px solid rgba(148, 163, 184, 0.08);
+}
+
+[data-theme="dark"] .premium-table-wrapper {
+    border-color: rgba(255, 255, 255, 0.05);
+}
+
+.table-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 2rem 2.5rem;
+    background: linear-gradient(135deg, rgba(76, 106, 196, 0.03) 0%, rgba(118, 79, 230, 0.02) 100%);
+    border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+    gap: 1.5rem;
+}
+
+[data-theme="dark"] .table-section-header {
+    background: linear-gradient(135deg, rgba(91, 124, 224, 0.05) 0%, rgba(138, 99, 255, 0.03) 100%);
+    border-bottom-color: rgba(255, 255, 255, 0.06);
+}
+
+.section-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.title-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    border-radius: 10px;
+    color: white;
+    font-size: 1.2rem;
+}
+
+.section-subtitle {
+    color: var(--muted);
+    font-size: 0.95rem;
+}
+
+.table-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.65rem 1.25rem;
+    background: rgba(76, 106, 196, 0.08);
+    border: 1px solid rgba(76, 106, 196, 0.15);
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--primary);
+}
+
+[data-theme="dark"] .table-badge {
+    background: rgba(91, 124, 224, 0.12);
+    border-color: rgba(91, 124, 224, 0.2);
+}
+
+/* Table */
+.modern-table-container {
+    overflow-x: auto;
+}
+
+.premium-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    min-width: 800px;
+}
+
+.table-head {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+}
+
+.table-head th {
+    padding: 1.4rem 2rem;
+    text-align: left;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    color: rgba(255, 255, 255, 0.95);
+    border-bottom: 2px solid rgba(76, 106, 196, 0.4);
+}
+
+.th-inner {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.th-foto { width: 80px; }
+.th-nama { width: 35%; }
+.th-jabatan { width: 30%; }
+.th-atasan { width: 25%; }
+
+.table-body {
+    background: var(--surface);
+}
+
+.table-row {
+    border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+    transition: all var(--transition);
+}
+
+[data-theme="dark"] .table-row {
+    border-bottom-color: rgba(255, 255, 255, 0.04);
+}
+
+.table-row:hover {
+    background: rgba(76, 106, 196, 0.04);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+}
+
+[data-theme="dark"] .table-row:hover {
+    background: rgba(91, 124, 224, 0.06);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.table-row:last-child {
+    border-bottom: none;
+}
+
+.table-row td {
+    padding: 1.3rem 2rem;
+    vertical-align: middle;
+}
+
+/* Avatar Column */
+.avatar-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.table-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2.5px solid var(--primary);
+    box-shadow: 0 3px 10px rgba(15, 23, 42, 0.12);
+    transition: all var(--transition);
+}
+
+.table-row:hover .table-avatar {
+    transform: scale(1.08);
+    box-shadow: 0 5px 16px rgba(76, 106, 196, 0.3);
+}
+
+.table-avatar.avatar-placeholder {
+    background: linear-gradient(135deg, var(--accent) 0%, var(--primary) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.3rem;
+}
+
+/* Nama Column */
+.nama-cell {
+    display: flex;
+    flex-direction: column;
+}
+
+.nama-primary {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.4;
+}
+
+/* Jabatan Column */
+.jabatan-cell {
+    display: flex;
+    align-items: flex-start;
+}
+
+.jabatan-badge {
+    display: inline-block;
+    padding: 0.55rem 1.1rem;
+    background: rgba(148, 163, 184, 0.08);
+    border: 1px solid rgba(148, 163, 184, 0.12);
+    border-radius: 7px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text);
+    transition: all var(--transition);
+}
+
+[data-theme="dark"] .jabatan-badge {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+.table-row:hover .jabatan-badge {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+    transform: translateX(3px);
+}
+
+/* Atasan Column */
+.atasan-cell {
+    display: flex;
+    align-items: center;
+}
+
+.atasan-name {
+    font-size: 0.92rem;
+    font-weight: 500;
+    color: var(--text);
+    opacity: 0.85;
+}
+
+.atasan-empty {
+    font-size: 1.2rem;
+    color: var(--muted);
+    opacity: 0.4;
+}
+
+/* ===== EMPTY STATE ===== */
+.empty-state-modern {
+    text-align: center;
+    padding: 5rem 2rem;
+}
+
+.empty-icon {
+    font-size: 5rem;
+    color: var(--muted);
+    opacity: 0.3;
+    margin-bottom: 1.5rem;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.3; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.05); }
+}
+
+.empty-state-modern h3 {
+    font-size: 1.75rem;
+    color: var(--text);
+    margin-bottom: 1rem;
+}
+
+.empty-state-modern p {
+    color: var(--muted);
+    font-size: 1rem;
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 1024px) {
+    .hero-section h1 {
+        font-size: 2rem;
+    }
+    
+    .org-chart-title h2 {
+        font-size: 1.75rem;
+    }
+    
+    .table-section-header {
+        padding: 1.5rem 1.75rem;
+    }
+
+    .section-title {
+        font-size: 1.5rem;
+    }
+
+    .premium-table {
+        min-width: 700px;
+    }
+}
+
+@media (max-width: 768px) {
+    .hero-section {
+        padding: 2rem 1rem;
+    }
+    
+    .hero-section h1 {
+        font-size: 1.5rem;
+    }
+    
+    .hero-icon {
+        font-size: 2rem;
+    }
+
+    .org-chart-container {
+        padding: 2rem 1rem;
+    }
+
+    .org-chart-title h2 {
+        font-size: 1.5rem;
+    }
+
+    /* Mobile Layout - Vertical Stacking */
+    .organization-chart {
+        padding: 0.5rem 0;
+    }
+
+    .org-level {
+        gap: 1rem;
+    }
+
+    /* Level 2 - Vertical Stack */
+    .org-level.level-2 {
+        flex-direction: column;
+        align-items: center;
+        gap: 0;
+    }
+
+    /* Hide horizontal T-connector, keep vertical */
+    .t-connector::after {
+        display: none;
+    }
+
+    .t-connector::before {
+        height: 20px;
+    }
+
+    /* Add vertical connectors between level 2 items */
+    .org-level.level-2 .org-card-wrapper {
+        position: relative;
+        margin-bottom: 40px;
+    }
+
+    .org-level.level-2 .org-card-wrapper:last-child {
+        margin-bottom: 0;
+    }
+
+    .org-level.level-2 .org-card-wrapper::after {
+        content: '';
+        position: absolute;
+        width: 3px;
+        height: 40px;
+        background: var(--muted);
+        opacity: 0.4;
+        bottom: -40px;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    .org-level.level-2 .org-card-wrapper:last-child::after {
+        display: none;
+    }
+
+    /* Level 3 - Horizontal Pairs (2x2 grid style) */
+    .org-level.level-3 {
+        flex-direction: column;
+        gap: 0;
+        margin-top: 0;
+    }
+
+    .org-level.level-3::before {
+        display: none;
+    }
+
+    .org-level.level-3 .org-card-wrapper::before {
+        display: none;
+    }
+
+    /* Bendahara Row */
+    .org-row.bendahara-row {
+        position: relative;
+        margin-bottom: 0;
+    }
+
+    /* T-connector above bendahara row */
+    .org-row.bendahara-row::before {
+        content: '';
+        position: absolute;
+        width: 3px;
+        height: 20px;
+        background: var(--muted);
+        opacity: 0.4;
+        top: -20px;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    .org-row.bendahara-row::after {
+        content: '';
+        position: absolute;
+        height: 3px;
+        width: 70%;
+        background: var(--muted);
+        opacity: 0.4;
+        top: 0;
+        left: 15%;
+    }
+
+    /* Vertical connectors for bendahara items */
+    .org-row.bendahara-row .org-card-wrapper::before {
+        content: '';
+        position: absolute;
+        width: 3px;
+        height: 20px;
+        background: var(--muted);
+        opacity: 0.4;
+        top: -20px;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    /* Sekretaris Row */
+    .org-row.sekretaris-row {
+        position: relative;
+    }
+
+    /* T-connector above sekretaris row */
+    .org-row.sekretaris-row::before {
+        content: '';
+        position: absolute;
+        width: 3px;
+        height: 20px;
+        background: var(--muted);
+        opacity: 0.4;
+        top: -20px;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    .org-row.sekretaris-row::after {
+        content: '';
+        position: absolute;
+        height: 3px;
+        width: 70%;
+        background: var(--muted);
+        opacity: 0.4;
+        top: 0;
+        left: 15%;
+    }
+
+    /* Vertical connectors for sekretaris items */
+    .org-row.sekretaris-row .org-card-wrapper::before {
+        content: '';
+        position: absolute;
+        width: 3px;
+        height: 20px;
+        background: var(--muted);
+        opacity: 0.4;
+        top: -20px;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    .org-row {
+        gap: 1rem;
+        margin-bottom: 0;
+        flex-wrap: nowrap;
+    }
+
+    /* Mobile Connectors - Show them */
+    .mobile-connector {
+        display: block;
+        height: 40px;
+        width: 3px;
+        background: var(--muted);
+        opacity: 0.4;
+        margin: 0 auto;
+    }
+    
+    .mobile-t-connector {
+        display: block;
+        position: relative;
+        width: 100%;
+        height: 40px;
+        margin: 0 auto;
+    }
+    
+    .mobile-t-connector::before {
+        content: '';
+        position: absolute;
+        width: 3px;
+        height: 20px;
+        background: var(--muted);
+        opacity: 0.4;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+    
+    .mobile-t-connector::after {
+        content: '';
+        position: absolute;
+        width: 70%;
+        height: 3px;
+        background: var(--muted);
+        opacity: 0.4;
+        top: 20px;
+        left: 15%;
+    }
+
+    .org-card {
+        min-width: 140px;
+        max-width: 180px;
+    }
+
+    .org-card.wali-kelas {
+        min-width: 180px;
+        max-width: 220px;
+    }
+
+    .org-card.small {
+        min-width: 140px;
+        max-width: 170px;
+    }
+
+    .org-avatar {
+        width: 70px;
+        height: 70px;
+    }
+
+    .org-card.wali-kelas .org-avatar {
+        width: 85px;
+        height: 85px;
+    }
+
+    .org-card.small .org-avatar {
+        width: 60px;
+        height: 60px;
+    }
+
+    .org-name {
+        font-size: 0.95rem;
+    }
+
+    .org-badge {
+        font-size: 0.75rem;
+        padding: 0.35rem 0.8rem;
+    }
+
+    /* Table Mobile */
+    .table-section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 1.5rem;
+        gap: 1rem;
+    }
+
+    .section-title {
+        font-size: 1.4rem;
+    }
+
+    .title-icon {
+        width: 38px;
+        height: 38px;
+        font-size: 1rem;
+    }
+
+    .premium-table {
+        min-width: 600px;
+    }
+
+    .table-head th,
+    .table-row td {
+        padding: 1.1rem 1.2rem;
+        font-size: 0.9rem;
+    }
+
+    .table-avatar {
+        width: 42px;
+        height: 42px;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-section h1 {
+        font-size: 1.3rem;
+    }
+
+    .org-chart-title h2 {
+        font-size: 1.3rem;
+    }
+
+    .org-card {
+        min-width: 180px;
+        padding: 1.5rem 1rem;
+    }
+
+    .org-card.wali-kelas {
+        min-width: 220px;
+    }
+
+    .org-card.small {
+        min-width: 170px;
+    }
+
+    .org-avatar {
+        width: 75px;
+        height: 75px;
+    }
+
+    .org-card.wali-kelas .org-avatar {
+        width: 90px;
+        height: 90px;
+    }
+
+    .org-card.small .org-avatar {
+        width: 65px;
+        height: 65px;
+    }
+
+    .org-name {
+        font-size: 1rem;
+    }
+
+    .org-badge {
+        font-size: 0.75rem;
+        padding: 0.4rem 0.9rem;
+    }
+
+    .table-section-header {
+        padding: 1.25rem;
+    }
+
+    .section-title {
+        font-size: 1.25rem;
+    }
+
+    .premium-table {
+        min-width: 550px;
+    }
+
+    .table-head th,
+    .table-row td {
+        padding: 1rem;
+        font-size: 0.85rem;
+    }
+
+    .table-avatar {
+        width: 38px;
+        height: 38px;
+    }
+}
+
+/* ===== PRINT STYLES ===== */
+@media print {
+    .hero-section {
+        background: white;
+        color: black;
+        box-shadow: none;
+    }
+    
+    .org-card {
+        border: 1px solid #ccc;
+        box-shadow: none;
+        page-break-inside: avoid;
+    }
+
+    .premium-table-wrapper {
+        box-shadow: none;
+        border: 1px solid #ccc;
+    }
+
+    .table-head {
+        background: #f0f0f0 !important;
+    }
+
+    .table-head th {
+        color: black !important;
+        border-bottom: 2px solid #ccc !important;
+    }
+
+    .table-row {
+        page-break-inside: avoid;
+    }
+
+    .table-row:hover {
+        transform: none;
+        background: transparent;
+    }
+}
+
+/* ===== ACCESSIBILITY ===== */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+.org-card:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+.premium-table:focus-within {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+.table-row:focus-within {
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+}
+
+/* ===== SEKSI CARDS ===== */
+.org-card.seksi {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border-color: #f59e0b;
+}
+
+[data-theme="dark"] .org-card.seksi {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(245, 158, 11, 0.1) 100%);
+    border-color: #fbbf24;
+}
+
+.org-card.seksi .org-avatar {
+    border-color: #f59e0b;
+}
+
+.org-card.seksi .org-badge {
+    background: #f59e0b;
+}
+
+.dot.orange {
+    background: #f59e0b;
+}
+
+/* ===== SEKSI ROW ===== */
+.seksi-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+    .seksi-row {
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .seksi-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ===== ICON IMPROVEMENTS ===== */
+.org-avatar.default i.fa-chalkboard-teacher {
+    font-size: 2.8rem;
+}
+
+.org-avatar.default i.fa-user-tie {
+    font-size: 2.5rem;
+}
+
+.org-avatar.default i.fa-coins,
+.org-avatar.default i.fa-pen {
+    font-size: 2.3rem;
+}
+
+.org-avatar.default i.fa-users {
+    font-size: 2rem;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Intersection Observer for fade-in animation
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry, index) => {
+            if (entry.isIntersecting) {
+                setTimeout(() => {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }, index * 50);
+                observer.unobserve(entry.target);
+            }
+        });
+    }, observerOptions);
+
+    // Observe table rows
+    const tableRows = document.querySelectorAll('.table-row');
+    tableRows.forEach((row) => {
+        row.style.opacity = '0';
+        row.style.transform = 'translateY(20px)';
+        row.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+        observer.observe(row);
+    });
+});
+</script>
+
+{% endblock %}

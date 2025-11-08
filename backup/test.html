@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fully Responsive Interactive Website</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="chatbot.css">
+<link rel="stylesheet" href="chatbot_responsive.css">
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+<div class="chatbot-container">
+    <!-- Empty State dengan Animasi Modern -->
+<div class="chatbot-empty-state" id="emptyState">
+    <div class="empty-state-content">
+        <!-- Hero Section dengan Icon -->
+        <div class="hero-section">
+            <div class="ai-icon-container">
+                <div class="icon-glow-outer"></div>
+                <div class="icon-glow-middle"></div>
+                <div class="icon-glow-inner"></div>
+                <div class="ai-icon-badge">
+                    <i class="fas fa-robot"></i>
+                </div>
+            </div>
+            
+            <!-- Welcome Text -->
+            <div class="welcome-text">
+                <h1 class="greeting-title">
+                    Hai, saya <span class="brand-name">Calavera AI</span>
+                </h1>
+                <p class="greeting-subtitle">
+                    Apa yang bisa saya bantu?
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+    
+    <!-- Chat Messages Area dengan Custom Scrollbar -->
+    <div class="chatbot-messages" id="chatMessages"></div>
+    
+    <!-- Input Area - Sticky Bottom -->
+    <div class="chatbot-input-wrapper">
+        <div class="chatbot-input-container">
+            <!-- Image Preview - Block Element -->
+            <div class="image-preview-container" id="imagePreviewContainer">
+                <div class="image-preview-wrapper">
+                    <img id="imagePreview" src="" alt="Preview gambar">
+                    <button class="remove-image" id="removeImageBtn" title="Hapus gambar">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <span class="image-preview-label">
+                    <i class="fas fa-image"></i>
+                    Gambar akan dikirim
+                </span>
+            </div>
+            
+            <div class="file-preview-container" id="filePreviewContainer">
+    <div class="file-preview-wrapper">
+        <div class="file-preview-icon" id="filePreviewIcon">
+            <i class="fas fa-file"></i>
+        </div>
+        <div class="file-preview-info">
+            <span class="file-preview-name" id="filePreviewName">document.pdf</span>
+            <span class="file-preview-size" id="filePreviewSize">0 KB</span>
+        </div>
+        <button class="remove-file" id="removeFileBtn" title="Hapus file">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+    <span class="file-preview-label">
+        <i class="fas fa-file"></i>
+        File akan dikirim
+    </span>
+</div> 
+
+<!-- Personality Settings Modal -->
+<div class="personality-settings">
+  <div class="settings-controls-row">
+    <!-- Tombol Pengaturan Gabungan -->
+    <button class="main-settings-toggle" id="mainSettingsToggle">
+        <i class="fas fa-cog"></i>
+        <span>Pengaturan</span>
+        <i class="fas fa-chevron-down settings-arrow"></i>
+    </button>
+    
+    <!-- Tombol Hapus -->
+    <button class="clear-chat-btn" id="clearChatBtn">
+        <i class="fas fa-trash-alt"></i>
+        <span> Hapus Semua</span>
+    </button>
+  </div>
+  
+  <!-- Dropdown Pengaturan -->
+  <div class="settings-dropdown" id="settingsDropdown">
+    <div class="settings-dropdown-content">
+      <div class="dropdown-option" id="personalityOption">
+        <div class="dropdown-option-icon">
+          <i class="fas fa-masks-theater"></i>
+        </div>
+        <div class="dropdown-option-content">
+          <div class="dropdown-option-title">Kepribadian Bot</div>
+          <div class="dropdown-option-desc" id="currentPersonalityLabel">Default</div>
+        </div>
+        <i class="fas fa-chevron-right"></i>
+      </div>
+      
+      <div class="dropdown-option" id="modelOption">
+        <div class="dropdown-option-icon">
+          <i class="fas fa-brain"></i>
+        </div>
+        <div class="dropdown-option-content">
+          <div class="dropdown-option-title">Model AI</div>
+          <div class="dropdown-option-desc" id="currentModelLabel">Gemini 2.5 Flash</div>
+        </div>
+        <i class="fas fa-chevron-right"></i>
+      </div>
+    </div>
+    <div class="dropdown-option" id="autoClearOption">
+    <div class="dropdown-option-icon">
+      <i class="fas fa-clock-rotate-left"></i>
+    </div>
+    <div class="dropdown-option-content">
+      <div class="dropdown-option-title">Hapus Riwayat Otomatis</div>
+      <div class="dropdown-option-desc" id="autoClearStatus">Nonaktif</div>
+    </div>
+    <div class="auto-clear-toggle">
+      <input type="checkbox" id="autoClearCheckbox" class="toggle-checkbox">
+      <label for="autoClearCheckbox" class="toggle-label">
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+</div>
+  </div>
+</div>
+
+<!-- ✅ MODAL OVERLAY (Di luar input wrapper) -->
+<div class="personality-modal-overlay" id="personalityModalOverlay">
+    <div class="personality-modal" id="personalityModal">
+        <!-- Header -->
+        <div class="modal-header">
+            <div class="modal-title">
+                <i class="fas fa-robot"></i>
+                <span>Pilih Gaya Bicara Bot</span>
+            </div>
+            <button class="modal-close" id="modalCloseBtn">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <!-- Options List -->
+        <div class="modal-body">
+            <div class="personality-options">
+                <div class="personality-option" data-value="">
+                    <div class="option-icon">
+                        <i class="fas fa-comments"></i>
+                    </div>
+                    <div class="option-content">
+                        <div class="option-title">Default</div>
+                        <div class="option-desc">Ramah & membantu</div>
+                    </div>
+                    <i class="fas fa-check option-check"></i>
+                </div>
+                
+                <div class="personality-option" data-value="Bicara dengan gaya santai seperti teman sebaya, gunakan bahasa gaul tapi tetap sopan">
+                    <div class="option-icon">
+                        <i class="fas fa-user-friends"></i>
+                    </div>
+                    <div class="option-content">
+                        <div class="option-title">Teman Santai</div>
+                        <div class="option-desc">Gaya casual dan ramah</div>
+                    </div>
+                    <i class="fas fa-check option-check"></i>
+                </div>
+                
+                <div class="personality-option" data-value="Bicara formal dan profesional seperti guru pembimbing yang berpengalaman">
+                    <div class="option-icon">
+                        <i class="fas fa-user-tie"></i>
+                    </div>
+                    <div class="option-content">
+                        <div class="option-title">Guru Pembimbing</div>
+                        <div class="option-desc">Formal dan profesional</div>
+                    </div>
+                    <i class="fas fa-check option-check"></i>
+                </div>
+                
+                <div class="personality-option" data-value="Bicara dengan antusias dan humoris, sering gunakan emoji dan candaan ringan">
+                    <div class="option-icon">
+                        <i class="fas fa-laugh"></i>
+                    </div>
+                    <div class="option-content">
+                        <div class="option-title">Humoris & Ceria</div>
+                        <div class="option-desc">Antusias dengan humor</div>
+                    </div>
+                    <i class="fas fa-check option-check"></i>
+                </div>
+                
+                <div class="personality-option" data-value="Bicara singkat, padat, dan to the point tanpa basa-basi">
+                    <div class="option-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <div class="option-content">
+                        <div class="option-title">Singkat & Jelas</div>
+                        <div class="option-desc">Langsung ke inti</div>
+                    </div>
+                    <i class="fas fa-check option-check"></i>
+                </div>
+                
+                <div class="personality-option" data-value="custom">
+                    <div class="option-icon">
+                        <i class="fas fa-magic"></i>
+                    </div>
+                    <div class="option-content">
+                        <div class="option-title">Custom</div>
+                        <div class="option-desc">Buat gaya sendiri</div>
+                    </div>
+                    <i class="fas fa-check option-check"></i>
+                </div>
+            </div>
+            
+            <!-- Custom Textarea -->
+            <textarea 
+                class="custom-personality" 
+                id="customPersonality" 
+                placeholder="Contoh: Bicara seperti penyair yang puitis, gunakan bahasa indah dan penuh metafora..."
+                style="display: none;"
+            ></textarea>
+        </div>
+    </div>
+</div>
+            
+<div class="model-modal-overlay" id="modelModalOverlay">
+    <div class="personality-modal" id="modelModal">
+        <!-- Header -->
+        <div class="modal-header">
+            <div class="modal-title">
+                <i class="fas fa-brain"></i>
+                <span>Pilih Model AI</span>
+            </div>
+            <button class="modal-close" id="modelCloseBtn">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <!-- Options List -->
+        <div class="modal-body">
+            <div class="personality-options">
+                <!-- ✅ Gemini Option -->
+                <div class="model-option" data-model="gemini">
+                    <div class="option-icon option-icon-image">
+                        <!-- ✅ PAKAI url_for Jinja -->
+                        <img src="{{ url_for('static', filename='img/logos/gemini.png') }}" 
+                             alt="Gemini Logo" 
+                             class="model-logo"
+                             onerror="this.src='{{ url_for('static', filename='img/logos/gemini.svg') }}'">
+                    </div>
+                    <div class="option-content">
+                        <div class="option-title">Gemini 2.5 Flash</div>
+                        <div class="option-desc">Google - Cepat & akurat</div>
+                    </div>
+                    <i class="fas fa-check option-check"></i>
+                </div>
+                
+                <!-- ✅ Groq/Llama Option -->
+                <div class="model-option" data-model="groq">
+                    <div class="option-icon option-icon-image">
+                        <!-- ✅ PAKAI url_for Jinja -->
+                        <img src="{{ url_for('static', filename='img/logos/meta.png') }}" 
+                             alt="Meta Logo" 
+                             class="model-logo"
+                             onerror="this.src='{{ url_for('static', filename='img/logos/meta.svg') }}'">
+                    </div>
+                    <div class="option-content">
+                        <div class="option-title">Llama 3.3 70B</div>
+                        <div class="option-desc">Meta - Super cepat & powerful</div>
+                    </div>
+                    <i class="fas fa-check option-check"></i>
+                </div>
+                
+                <!-- ✅ TAMBAHKAN OPSI DEEPSEEK INI -->
+<div class="model-option" data-model="deepseek">
+    <div class="option-icon option-icon-image">
+        <img src="{{ url_for('static', filename='img/logos/deepseek.png') }}" 
+             alt="DeepSeek Logo" 
+             class="model-logo"
+             onerror="this.style.display='none'; this.parentElement.innerHTML='<i class=\'fas fa-brain\'></i>'">
+    </div>
+    <div class="option-content">
+        <div class="option-title">DeepSeek R1</div>
+        <div class="option-desc">DeepSeek - Reasoning model</div>
+    </div>
+    <i class="fas fa-check option-check"></i>
+</div>
+
+<div class="model-option" data-model="mistral">
+    <div class="option-icon option-icon-image">
+        <img src="{{ url_for('static', filename='img/logos/mistral_ai.png') }}" 
+             alt="Mistral Logo" 
+             class="model-logo"
+             onerror="this.style.display='none'; this.parentElement.innerHTML='<i class=\'fas fa-magic\'></i>'">
+    </div>
+    <div class="option-content">
+        <div class="option-title">Mistral Small 24B</div>
+        <div class="option-desc">Mistral AI - Cepat & akurat</div>
+    </div>
+    <i class="fas fa-check option-check"></i>
+</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+ 
+            
+            <!-- Input Row - Horizontal Layout -->
+                <div class="input-row">
+    <button class="input-btn upload-btn" id="uploadImageBtn" title="Upload">
+        <i class="fas fa-paperclip"></i>
+    </button>
+    
+    <!-- Hidden file inputs -->
+    <input type="file" id="imageFileInput" accept="image/*" style="display: none;">
+    <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display: none;">
+    <input type="file" id="fileInput" accept=".pdf,.doc,.docx,.txt,.xlsx,.pptx" style="display: none;">
+                
+                <input type="file" id="imageFileInput" accept="image/*" style="display: none;">
+                
+                <div class="textarea-wrapper">
+                    <textarea 
+                        class="chat-input" 
+                        id="chatInput" 
+                        placeholder="Tanyakan apa saja"
+                        rows="1"
+                    ></textarea>
+                </div>
+                
+                <button class="input-btn search-btn" id="searchToggleBtn" title="Cari di Internet">
+                    <i class="fas fa-globe"></i>
+                </button>
+                
+                <button class="input-btn send-btn" id="sendMessageBtn" title="Kirim Pesan">
+                    <i class="fas fa-arrow-up"></i>
+                </button>
+            </div>
+            
+        </div>
+    </div>
+    <!-- Upload Options Modal -->
+<div class="upload-modal-overlay" id="uploadModalOverlay">
+    <div class="upload-modal" id="uploadModal">
+        <button class="upload-modal-close" id="uploadModalClose">
+            <i class="fas fa-times"></i>
+        </button>
+        
+        <div class="upload-options">
+            <div class="upload-option-card" id="optionCamera">
+                <div class="upload-option-icon">
+                    <i class="fas fa-camera"></i>
+                </div>
+                <div class="upload-option-label">Kamera</div>
+            </div>
+
+            <div class="upload-option-card" id="optionPhoto">
+                <div class="upload-option-icon">
+                    <i class="fas fa-image"></i>
+                </div>
+                <div class="upload-option-label">Foto</div>
+            </div>
+
+            <div class="upload-option-card" id="optionFile">
+                <div class="upload-option-icon">
+                    <i class="fas fa-file-arrow-up"></i>
+                </div>
+                <div class="upload-option-label">File</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</div>
+
+<script src="../js/chatbot.js"></script>
+<script>
+// Configure KaTeX auto-render
+document.addEventListener('DOMContentLoaded', function() {
+    // Render existing math on page load
+    if (window.renderMathInElement) {
+        renderMathInElement(document.body, {
+            delimiters: [
+                {left: '$$', right: '$$', display: true},   // Block math
+                {left: '$', right: '$', display: false},    // Inline math
+                {left: '\\[', right: '\\]', display: true}, // Block math alt
+                {left: '\\(', right: '\\)', display: false} // Inline math alt
+            ],
+            throwOnError: false,
+            errorColor: '#cc0000',
+            strict: false
+        });
+    }
+});
+</script>
+</body>
+</html>

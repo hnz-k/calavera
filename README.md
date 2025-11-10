@@ -101,7 +101,7 @@
 - **Figma** - UI/UX design
 
 <p align="center">
-  <img src="https://skillicons.dev/icons?i=html,css,js,python,flask,sqlite,postgresql,git,docker,figma" />
+  <img src="https://skillicons.dev/icons?i=html,css,js,python,flask,sqlite,git,figma" />
 </p>
 
 ---

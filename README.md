@@ -427,8 +427,9 @@ Special thanks to:
 
 Start using Calavera Class Web today and revolutionize your educational workflow.
 
-https://img.shields.io/badge/Get-Started-blue
-https://img.shields.io/badge/View-Demo-green
-https://img.shields.io/badge/Report-Bug-red
-
+<img src="https://img.shields.io/badge/Get-Started-blue" alt="Get Started">
+  <img src="https://img.shields.io/badge/View-Demo-green" View Demo
+  <img src="https://img.shields.io/badge/Report-Bug-red" alt="Report Bug">
+  <img src="https://img.shields.io/badge/flask-2.3.3-red" alt="Flask">
+</p>
 </div>

@@ -62,7 +62,6 @@ Didesain dengan **UI modern**, **responsif**, dan **mudah dikembangkan lebih lan
 ## ⚙️ Installation
 
 ### 1️⃣ Clone Repository
-```bash
 git clone https://github.com/username/calavera-class-web.git
 cd calavera-class-web
 

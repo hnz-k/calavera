@@ -1,209 +1,229 @@
-
 <p align="center">
-  <img src="/static/img/logos/calavera.jpg" alt="Project Banner" width="100%">
+  <img src="/static/img/logos/calavera.jpg" alt="Calavera Logo" width="100%">
 </p>
 
-<h1 align="center">Calavera - Class Web</h1>
+<h1 align="center">🎓 Calavera — Class Web Platform</h1>
+
 <p align="center">
-  <b>A modern, scalable, and elegant web application built for performance and creativity.</b>
+  <b>A modern and elegant web platform for class collaboration, project sharing, and student creativity.</b>
 </p>
 
 <p align="center">
+  <a href="#-about-the-project">About</a> •
   <a href="#-features">Features</a> •
-  <a href="#-installation">Installation</a> •
+  <a href="#️-installation">Installation</a> •
   <a href="#-usage">Usage</a> •
-  <a href="#-folder-structure">Folder Structure</a> •
-  <a href="#-contributing">Contributing</a> •
-  <a href="#-license">License</a>
+  <a href="#-project-structure">Structure</a> •
+  <a href="#-developer">Developer</a>
 </p>
 
 ---
 
 ## 🧠 About the Project
-This project is designed to demonstrate **modern UI/UX**, clean code architecture, and full responsiveness.  
-Built for developers who value efficiency, scalability, and design consistency.
+**Calavera Class Web** adalah platform berbasis Flask yang dibuat untuk mempermudah interaksi antar siswa, menampilkan profil, proyek, dan berbagai kegiatan kelas secara online.  
+Didesain dengan **UI modern**, **responsif**, dan **mudah dikembangkan lebih lanjut.**
 
-Use it as:
-- 🌐 A portfolio project
-- 🧩 A base for full-stack web apps
-- 🧠 A learning resource for clean architecture
+💡 Tujuan utama:
+- Menjadi website kelas yang keren & profesional  
+- Tempat showcase karya siswa  
+- Wadah kolaborasi dan pembelajaran teknologi web  
 
 ---
 
 ## ✨ Features
-- ⚡ Lightning-fast load times  
-- 🎨 Responsive and accessible design  
-- 🔒 Secure backend structure  
-- 🧩 Modular & maintainable codebase  
-- 🌗 Light/Dark mode support  
-- 📦 Simple configuration setup  
-- 📊 Built-in analytics-ready template  
+
+- 🧑‍🏫 **Student Profiles:** Menampilkan biodata, foto, dan bio setiap siswa  
+- 📸 **Photo Gallery:** Dokumentasi kegiatan kelas  
+- 💬 **Interactive Chat or Comments:** (opsional) fitur komunikasi antar siswa  
+- 🌗 **Dark/Light Mode:** Tampilan adaptif untuk semua pengguna  
+- ⚙️ **Dynamic Backend:** Menggunakan Flask + SQLite  
+- 📱 **Fully Responsive:** Nyaman diakses di HP maupun PC  
+- 🧩 **Easily Customizable:** Struktur kode rapi dan mudah diperluas  
 
 ---
 
 ## 🛠️ Tech Stack
+
 | Layer | Technologies |
 |-------|---------------|
 | Frontend | HTML5, CSS3, JavaScript (ES6+) |
 | Backend | Flask (Python) |
-| Database | SQLite / PostgreSQL |
-| Tools | Git, VSCode, Figma |
-| Deployment | Vercel / Render / Docker |
+| Database | SQLite |
+| Design | Figma, TailwindCSS (optional integration) |
+| Tools | Git, VSCode |
+| Deployment | Render / Vercel / GitHub Pages |
 
 <p align="center">
-  <img src="https://skillicons.dev/icons?i=html,css,js,python,flask,sqlite,git,vercel,docker,figma" />
+  <img src="https://skillicons.dev/icons?i=html,css,js,python,flask,sqlite,git,vercel,figma" />
 </p>
 
 ---
 
 ## ⚙️ Installation
 
-### 🔹 Clone the repository
+### 1️⃣ Clone Repository
 ```bash
-git clone https://github.com/username/project-name.git
-cd project-name
-```
+git clone https://github.com/username/calavera-class-web.git
+cd calavera-class-web
 
-🔹 (Optional) Create virtual environment
+2️⃣ (Opsional) Buat Virtual Environment
 
-```bash
 python -m venv venv
-source venv/bin/activate  # or venv\Scripts\activate on Windows
-```
+source venv/bin/activate  # Mac/Linux
+# atau di Windows:
+venv\Scripts\activate
 
-🔹 Install dependencies
+3️⃣ Install Dependencies
 
-```bash
 pip install -r requirements.txt
-```
 
-🔹 Run the project
+4️⃣ Jalankan Aplikasi
 
-```bash
 python app.py
-```
+
+Akses di browser:
+👉 http://localhost:5000
+
 
 ---
 
 🚀 Usage
 
-Once the server is running, open your browser and visit:
+1. Buka website di browser.
 
-```
-http://localhost:5000
-```
 
-You can now explore the web interface and interact with the application.
+2. Jelajahi halaman utama, profil siswa, dan galeri kelas.
+
+
+3. Administrator dapat menambah data baru (siswa, postingan, dsb) melalui halaman backend atau file JSON.
+
+
+4. Dapat di-host secara online agar bisa diakses oleh teman sekelas.
+
+
+
 
 ---
 
-🧩 Folder Structure
+📂 Project Structure
 
-```
-project-name/
+calavera-class-web/
 │
-├── assets/               # Images, icons, and static files
-├── src/                  # Main source code
-│   ├── templates/        # HTML templates
-│   ├── static/           # CSS, JS, etc.
-│   └── app.py            # Main Flask application
+├── static/
+│   ├── css/              # File style dan tema
+│   ├── js/               # Script interaktif
+│   └── img/              # Gambar, logo, dan foto kelas
+│
+├── templates/
+│   ├── index.html        # Halaman utama
+│   ├── siswa.html        # Daftar siswa
+│   ├── detail.html       # Profil individu
+│   └── base.html         # Template utama
+│
+├── app.py                # Main Flask app
+├── data.json             # Data siswa (opsional)
 ├── requirements.txt
-├── README.md
-└── LICENSE
-```
+├── .env
+└── README.md
+
 
 ---
 
 ⚙️ Configuration
 
-Create a .env file in the project root:
+Buat file .env di root folder:
 
-```env
 FLASK_ENV=development
 SECRET_KEY=your_secret_key
 DATABASE_URL=sqlite:///data.db
-```
+
 
 ---
 
-🧪 Testing
+🖼️ Preview
 
-Run all unit tests using:
+Mode	Screenshot
 
-```bash
-pytest
-```
+🌞 Light Mode	
+🌙 Dark Mode	
 
----
 
-🖼️ Screenshots
-
-Light Mode Dark Mode
- 
-
----
-
-🌍 Live Demo
-
-🎮 Try it now
-See how it works in real-time.
-
----
-
-📈 Project Status
 
 ---
 
 🧑‍💻 Developer
 
-Name Role Contact
-Dikzzz Full Stack Developer 📧 Email · 🌐 Portfolio
+Name	Role	Contact
+
+Dikzzz	Full Stack Developer	📧 [Email] · 🌐 [Portfolio] · 🐙 GitHub
+
+
 
 ---
 
 🤝 Contributing
 
-Contributions, issues, and feature requests are welcome!
+Kontribusi sangat terbuka!
+Jika ingin menambah fitur atau memperbaiki bug:
 
-1. Fork this repo
-2. Create your feature branch (git checkout -b feature/amazing-feature)
-3. Commit your changes (git commit -m 'Add amazing feature')
-4. Push to the branch (git push origin feature/amazing-feature)
-5. Open a Pull Request
+1. Fork repo ini
+
+
+2. Buat branch baru (git checkout -b feature/awesome-feature)
+
+
+3. Commit perubahan (git commit -m 'add new feature')
+
+
+4. Push branch (git push origin feature/awesome-feature)
+
+
+5. Buka Pull Request
+
+
+
 
 ---
 
 🧾 Changelog
 
-· v1.0.0 — Initial release
-· v1.1.0 — Added dark mode support
-· v1.2.0 — Optimized code & updated documentation
+v1.0.0 — Initial release
+
+v1.1.0 — Added dark mode + responsive layout
+
+v1.2.0 — Improved UI & documentation
+
+
 
 ---
 
 📜 License
 
-This project is licensed under the MIT License.
+Licensed under the MIT License
 © 2025 Dikzzz. All rights reserved.
 
+
 ---
-
-Support the Project
-
-If you find this project helpful, please consider giving it a ⭐ star!
-It helps others discover this repository and motivates further development.
 
 <p align="center">
+  If you like this project, don't forget to give it a ⭐ and share it with your classmates!
+</p><p align="center">
   <img src="https://raw.githubusercontent.com/Platane/snk/output/github-contribution-grid-snake-dark.svg" alt="snake animation" />
 </p>
-
 ---
 
-🌟 Acknowledgements
+🙏 Acknowledgements
 
 Special thanks to:
 
-· Flask
-· Shields.io
-· Skill Icons
-· Unsplash for banner images
+Flask Framework
+
+Skill Icons
+
+Shields.io
+
+Unsplash (for banner images)
+
+
+---
+

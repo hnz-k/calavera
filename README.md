@@ -3,7 +3,7 @@
   <img src="/static/img/logos/calavera.jpg" alt="Project Banner" width="100%">
 </p>
 
-<h1 align="center">🚀 Project Name</h1>
+<h1 align="center">Calavera - Class Web</h1>
 <p align="center">
   <b>A modern, scalable, and elegant web application built for performance and creativity.</b>
 </p>

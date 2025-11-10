@@ -15,14 +15,16 @@
 </p>
 
 <p align="center">
-  <a href="#-about">About</a> •
-  <a href="#-features">Features</a> •
-  <a href="#-tech-stack">Tech Stack</a> •
-  <a href="#-installation">Installation</a> •
-  <a href="#-usage">Usage</a> •
-  <a href="#-api-reference">API</a> •
-  <a href="#-deployment">Deployment</a> •
-  <a href="#-contributing">Contributing</a>
+  <b>
+    <a href="#-about">🧠 About</a> |
+    <a href="#-features">✨ Features</a> |
+    <a href="#-tech-stack">🧩 Tech Stack</a> |
+    <a href="#-installation">⚙️ Installation</a> |
+    <a href="#-usage">🚀 Usage</a> |
+    <a href="#-api-reference">📚 API</a> |
+    <a href="#-deployment">🌍 Deployment</a> |
+    <a href="#-contributing">🤝 Contributing</a>
+  </b>
 </p>
 
 ---

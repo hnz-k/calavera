@@ -1,3 +1,4 @@
+```markdown
 <p align="center">  
   <img src="/static/img/logos/calavera.jpg" alt="Calavera Class Web" width="100%">  
 </p>

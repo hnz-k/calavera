@@ -83,7 +83,6 @@
 - **HTML5** - Semantic markup and structure
 - **CSS3** - Modern styling with Flexbox/Grid
 - **JavaScript ES6+** - Interactive frontend functionality
-- **Chart.js** - Data visualization and analytics
 
 ### Backend
 - **Python 3.8+** - Core programming language
@@ -98,7 +97,6 @@
 
 ### Tools & Services
 - **Git** - Version control
-- **Docker** - Containerization
 - **Vercel/Render** - Deployment platforms
 - **Figma** - UI/UX design
 

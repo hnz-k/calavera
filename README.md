@@ -432,4 +432,3 @@ https://img.shields.io/badge/View-Demo-green
 https://img.shields.io/badge/Report-Bug-red
 
 </div>
-```
